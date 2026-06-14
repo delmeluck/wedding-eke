@@ -1,0 +1,266 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Lato:wght@300;400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ─────────────────────────── */
+:root {
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-great-vibes: 'Great Vibes', cursive;
+  --font-lato: 'Lato', system-ui, sans-serif;
+  --gold: #C9A84C;
+  --purple-950: #350b36;   /* deep mauve */
+  --purple-800: #6b2568;   /* main mauve */
+  --lavender-300: #cca0cc; /* mild mauve accent */
+}
+
+/* ─── Base ───────────────────────────────────────────── */
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-lato);
+    background-color: #fef7ed;
+    color: #451a03;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 { font-family: var(--font-playfair); }
+}
+
+/* ─── Components ─────────────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-7 py-3.5 rounded-full
+           bg-purple-800 text-white font-sans font-medium tracking-wide
+           hover:bg-purple-700 active:scale-95
+           transition-all duration-300 ease-spring
+           shadow-lg shadow-purple-900/30
+           hover:shadow-xl hover:shadow-purple-900/40
+           hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-7 py-3.5 rounded-full
+           border-2 border-purple-800 text-purple-800 font-sans font-medium tracking-wide
+           hover:bg-purple-50 transition-all duration-300
+           hover:-translate-y-0.5;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg
+           text-purple-800 font-sans font-medium
+           hover:bg-purple-50 transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-md border border-lavender-100 p-6;
+  }
+
+  .section-title {
+    @apply font-serif text-4xl md:text-5xl text-purple-900 text-center mb-4;
+  }
+
+  .section-subtitle {
+    @apply font-sans text-earth-600 text-center text-lg mb-12 max-w-xl mx-auto;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-lavender-200
+           bg-white text-earth-900 placeholder-earth-400
+           focus:outline-none focus:ring-2 focus:ring-purple-400
+           transition-shadow duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-earth-700 mb-1;
+  }
+
+  .admin-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+
+  /* Reveal animation class — toggled by IntersectionObserver */
+  .reveal {
+    @apply opacity-0 translate-y-8 transition-all duration-700;
+    transition-timing-function: cubic-bezier(0.21, 0.47, 0.32, 0.98);
+  }
+  .reveal.visible {
+    @apply opacity-100 translate-y-0;
+  }
+  .reveal-left {
+    @apply opacity-0 -translate-x-8 transition-all duration-700;
+    transition-timing-function: cubic-bezier(0.21, 0.47, 0.32, 0.98);
+  }
+  .reveal-left.visible {
+    @apply opacity-100 translate-x-0;
+  }
+  .reveal-right {
+    @apply opacity-0 translate-x-8 transition-all duration-700;
+    transition-timing-function: cubic-bezier(0.21, 0.47, 0.32, 0.98);
+  }
+  .reveal-right.visible {
+    @apply opacity-100 translate-x-0;
+  }
+}
+
+/* ─── Floral / decorative ────────────────────────────── */
+.floral-divider {
+  text-align: center;
+  color: var(--lavender-300);
+  font-size: 1.25rem;
+  letter-spacing: 0.6rem;
+  user-select: none;
+}
+
+/* ─── Botanical Corner (pure CSS leaf shapes) ────────── */
+.botanical-tl,
+.botanical-br {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.botanical-tl::before,
+.botanical-tl::after,
+.botanical-br::before,
+.botanical-br::after {
+  content: '';
+  position: absolute;
+  border-radius: 50% 0 50% 0;
+  opacity: 0.12;
+}
+
+/* ─── Hero particle sparkles ─────────────────────────── */
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: sparkleAnim var(--dur, 4s) ease-in-out var(--delay, 0s) infinite;
+}
+
+@keyframes sparkleAnim {
+  0%, 100% { opacity: 0;   transform: scale(0)   translateY(0); }
+  20%       { opacity: 0.8; transform: scale(1)   translateY(0); }
+  80%       { opacity: 0.3; transform: scale(0.6) translateY(-20px); }
+}
+
+/* ─── Scroll progress bar ────────────────────────────── */
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), #e0c05a, var(--gold));
+  z-index: 100;
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}
+
+/* ─── Countdown page-flip ────────────────────────────── */
+
+/* Top flap folds down (old number disappears) */
+@keyframes cardFlipDown {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(-90deg); }
+}
+
+/* Bottom flap folds up into view (new number appears) */
+@keyframes cardFlipUp {
+  0%   { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+.flip-top-flap {
+  animation: cardFlipDown 0.32s cubic-bezier(0.4, 0, 1, 1) both;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+}
+
+.flip-bottom-flap {
+  animation: cardFlipUp 0.32s cubic-bezier(0, 0, 0.6, 1) 0.32s both;
+  transform-origin: center top;
+  backface-visibility: hidden;
+}
+
+.digit-top {
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: flex-end;
+  padding-bottom: 2px;
+}
+
+.digit-bottom {
+  border-radius: 0 0 12px 12px;
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+/* ─── Bento card hover glow ──────────────────────────── */
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.21, 0.47, 0.32, 0.98),
+              box-shadow 0.3s ease;
+}
+
+.bento-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.bento-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 60px rgba(59, 7, 100, 0.4);
+}
+
+/* ─── Gold line ornament ─────────────────────────────── */
+.ornament-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gold);
+  font-size: 0.75rem;
+  letter-spacing: 0.25rem;
+}
+
+.ornament-line::before,
+.ornament-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* ─── Timeline connector ─────────────────────────────── */
+.timeline-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, #c4b5fd 20%, #c4b5fd 80%, transparent);
+  transform: translateX(-50%);
+}
+
+/* ─── Custom scrollbar ───────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar-track  { background: #f5f3ff; }
+::-webkit-scrollbar-thumb  { background: #c4b5fd; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+
+/* ─── Utility delays ─────────────────────────────────── */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
