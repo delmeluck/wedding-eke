@@ -1,19 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { Mail, Lock, Send } from 'lucide-react'
 
-export default function LoginPage() {
-  const params = useSearchParams()
-  const error  = params.get('error')
+function LoginForm() {
+  const params   = useSearchParams()
+  const error    = params.get('error')
 
-  const [tab, setTab]         = useState<'magic' | 'password'>('magic')
-  const [email, setEmail]     = useState('')
+  const [tab,      setTab]      = useState<'magic' | 'password'>('password')
+  const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
-  const [sent, setSent]       = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [sent,     setSent]     = useState(false)
+  const [loading,  setLoading]  = useState(false)
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault()
@@ -42,20 +42,14 @@ export default function LoginPage() {
         <div className="p-8">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 mb-6">
-              {error === 'OAuthSignin' ? 'Sign in failed. Please try again.' : `Error: ${error}`}
+              {error === 'CredentialsSignin'
+                ? 'Incorrect email or password. Please try again.'
+                : `Sign-in error: ${error}`}
             </div>
           )}
 
           {/* Tabs */}
           <div className="flex rounded-xl overflow-hidden border border-lavender-200 mb-6">
-            <button
-              onClick={() => setTab('magic')}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-                tab === 'magic' ? 'bg-purple-800 text-white' : 'text-earth-600 hover:bg-lavender-50'
-              }`}
-            >
-              Magic Link
-            </button>
             <button
               onClick={() => setTab('password')}
               className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
@@ -63,6 +57,14 @@ export default function LoginPage() {
               }`}
             >
               Password
+            </button>
+            <button
+              onClick={() => setTab('magic')}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+                tab === 'magic' ? 'bg-purple-800 text-white' : 'text-earth-600 hover:bg-lavender-50'
+              }`}
+            >
+              Magic Link
             </button>
           </div>
 
@@ -75,30 +77,7 @@ export default function LoginPage() {
                 Click the link to access the admin dashboard.
               </p>
             </div>
-          ) : tab === 'magic' ? (
-            <form onSubmit={handleMagicLink} className="space-y-4">
-              <div>
-                <label className="label">Email Address</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-earth-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    placeholder="admin@wedding.com"
-                    className="input-field pl-9"
-                  />
-                </div>
-              </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full">
-                {loading ? 'Sending…' : 'Send Magic Link'}
-              </button>
-              <p className="text-earth-400 text-xs text-center">
-                A secure sign-in link will be emailed to you
-              </p>
-            </form>
-          ) : (
+          ) : tab === 'password' ? (
             <form onSubmit={handleCredentials} className="space-y-4">
               <div>
                 <label className="label">Email Address</label>
@@ -109,7 +88,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    placeholder="admin@wedding.com"
+                    placeholder="your@email.com"
                     className="input-field pl-9"
                   />
                 </div>
@@ -132,9 +111,44 @@ export default function LoginPage() {
                 {loading ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
+          ) : (
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              <div>
+                <label className="label">Email Address</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-earth-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    placeholder="your@email.com"
+                    className="input-field pl-9"
+                  />
+                </div>
+              </div>
+              <button type="submit" disabled={loading} className="btn-primary w-full">
+                {loading ? 'Sending…' : 'Send Magic Link'}
+              </button>
+              <p className="text-earth-400 text-xs text-center">
+                Requires email to be configured in environment variables.
+              </p>
+            </form>
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-hero-gradient flex items-center justify-center">
+        <div className="text-white font-script text-4xl">E &amp; E</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
