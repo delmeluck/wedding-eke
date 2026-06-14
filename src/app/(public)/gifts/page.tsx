@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { prisma } from '@/lib/prisma'
 import { Gift as GiftIcon, ExternalLink, Heart, Sparkles } from 'lucide-react'
 import Image from 'next/image'

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { prisma } from '@/lib/prisma'
 import { Phone, Mail, MapPin, ExternalLink, MessageCircle } from 'lucide-react'
 import { generateQRCodeDataURL } from '@/lib/qrcode'

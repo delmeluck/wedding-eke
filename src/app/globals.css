@@ -249,6 +249,95 @@
   transform: translateX(-50%);
 }
 
+/* ─── Gold Marquee ───────────────────────────────────── */
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  animation: marqueeScroll 32s linear infinite;
+  width: max-content;
+}
+.marquee-wrap:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* ─── Falling rose petals ────────────────────────────── */
+@keyframes petalFall {
+  0%   { transform: translateY(-30px) rotate(0deg) translateX(0px);   opacity: 0; }
+  8%   { opacity: 0.85; }
+  88%  { opacity: 0.5; }
+  100% { transform: translateY(100vh) rotate(600deg) translateX(40px); opacity: 0; }
+}
+.petal {
+  position: absolute;
+  border-radius: 50% 0 50% 0;
+  background: radial-gradient(ellipse at 38% 28%, #f4c0d8, #d890b8 55%, #a060a0);
+  animation: petalFall var(--dur, 7s) ease-in var(--delay, 0s) infinite;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(0.3px);
+}
+
+/* ─── Gallery strip horizontal scroll ───────────────── */
+.gallery-strip {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 8px 0 24px;
+  cursor: grab;
+}
+.gallery-strip:active { cursor: grabbing; }
+.gallery-strip::-webkit-scrollbar { display: none; }
+.gallery-strip-item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* ─── Image hover zoom ───────────────────────────────── */
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img,
+.img-zoom .img-inner {
+  transition: transform 0.7s cubic-bezier(0.21, 0.47, 0.32, 0.98);
+}
+.img-zoom:hover img,
+.img-zoom:hover .img-inner {
+  transform: scale(1.07);
+}
+
+/* ─── Couple monogram circle ─────────────────────────── */
+@keyframes ringPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.3), 0 0 0 4px rgba(201,168,76,0.1); }
+  50%       { box-shadow: 0 0 0 8px rgba(201,168,76,0.15), 0 0 0 16px rgba(201,168,76,0.05); }
+}
+.monogram-ring {
+  animation: ringPulse 3s ease-in-out infinite;
+}
+
+/* ─── Glass card ─────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ─── Text gradient gold ─────────────────────────────── */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #C9A84C 0%, #e0d080 40%, #C9A84C 70%, #a8832c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% auto;
+  animation: shimmer 5s linear infinite;
+}
+
 /* ─── Custom scrollbar ───────────────────────────────── */
 ::-webkit-scrollbar        { width: 5px; }
 ::-webkit-scrollbar-track  { background: #f5f3ff; }

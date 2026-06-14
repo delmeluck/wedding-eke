@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { prisma } from '@/lib/prisma'
 import { Clock, MapPin, ChevronRight } from 'lucide-react'
 import Link from 'next/link'

@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   if (!email) return NextResponse.json({ error: 'Missing email' }, { status: 400 })
 
   const invitee = await prisma.invitee.findFirst({
-    where: { email: { equals: email, mode: 'insensitive' } },
+    where: { email: { equals: email.toLowerCase() } },
     include: { rsvp: true },
   })
   if (!invitee) return NextResponse.json({ error: 'Not found' }, { status: 404 })
