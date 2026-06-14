@@ -287,7 +287,7 @@ export default function HomePage() {
 
         {/* Hero content */}
         <motion.div
-          className="relative z-10 text-center px-6 max-w-3xl mx-auto"
+          className="relative z-10 text-center px-6 max-w-3xl mx-auto pt-20 md:pt-24"
           style={{ opacity: heroOpacity }}
         >
           <motion.p
