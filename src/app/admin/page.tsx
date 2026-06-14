@@ -1,28 +1,39 @@
+export const dynamic = 'force-dynamic'
+
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Users, CalendarCheck, Gift, Camera, Mail, CheckCircle, XCircle, Clock } from 'lucide-react'
 
+const EMPTY_STATS = {
+  totalInvitees: 0, rsvpYes: 0, rsvpNo: 0, rsvpPending: 0,
+  totalGifts: 0, claimedGifts: 0, totalMedia: 0, recentEmails: [] as { id: string; subject: string; sentAt: Date; status: string }[],
+}
+
 async function getStats() {
-  const [
-    totalInvitees,
-    rsvpYes,
-    rsvpNo,
-    rsvpPending,
-    totalGifts,
-    claimedGifts,
-    totalMedia,
-    recentEmails,
-  ] = await Promise.all([
-    prisma.invitee.count(),
-    prisma.rSVP.count({ where: { attending: true } }),
-    prisma.rSVP.count({ where: { attending: false } }),
-    prisma.invitee.count({ where: { rsvp: null } }),
-    prisma.gift.count(),
-    prisma.gift.count({ where: { claimed: true } }),
-    prisma.mediaItem.count(),
-    prisma.emailLog.findMany({ orderBy: { sentAt: 'desc' }, take: 5 }),
-  ])
-  return { totalInvitees, rsvpYes, rsvpNo, rsvpPending, totalGifts, claimedGifts, totalMedia, recentEmails }
+  try {
+    const [
+      totalInvitees,
+      rsvpYes,
+      rsvpNo,
+      rsvpPending,
+      totalGifts,
+      claimedGifts,
+      totalMedia,
+      recentEmails,
+    ] = await Promise.all([
+      prisma.invitee.count(),
+      prisma.rSVP.count({ where: { attending: true } }),
+      prisma.rSVP.count({ where: { attending: false } }),
+      prisma.invitee.count({ where: { rsvp: null } }),
+      prisma.gift.count(),
+      prisma.gift.count({ where: { claimed: true } }),
+      prisma.mediaItem.count(),
+      prisma.emailLog.findMany({ orderBy: { sentAt: 'desc' }, take: 5 }),
+    ])
+    return { totalInvitees, rsvpYes, rsvpNo, rsvpPending, totalGifts, claimedGifts, totalMedia, recentEmails }
+  } catch {
+    return EMPTY_STATS
+  }
 }
 
 export default async function AdminDashboard() {
