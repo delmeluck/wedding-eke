@@ -5,11 +5,19 @@ import { Clock, MapPin, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 async function getAgenda() {
-  return prisma.agendaItem.findMany({ orderBy: [{ eventDate: 'asc' }, { sortOrder: 'asc' }] })
+  try {
+    return await prisma.agendaItem.findMany({ orderBy: [{ eventDate: 'asc' }, { sortOrder: 'asc' }] })
+  } catch {
+    return []
+  }
 }
 
 async function getVenues() {
-  return prisma.venue.findMany({ orderBy: { eventDate: 'asc' } })
+  try {
+    return await prisma.venue.findMany({ orderBy: { eventDate: 'asc' } })
+  } catch {
+    return []
+  }
 }
 
 export default async function ProgramPage() {

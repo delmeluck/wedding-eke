@@ -6,7 +6,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 async function getGifts() {
-  return prisma.gift.findMany({ orderBy: [{ priority: 'desc' }, { name: 'asc' }] })
+  try {
+    return await prisma.gift.findMany({ orderBy: [{ priority: 'desc' }, { name: 'asc' }] })
+  } catch {
+    return []
+  }
 }
 
 export default async function GiftsPage() {

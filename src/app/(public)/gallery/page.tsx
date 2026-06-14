@@ -5,7 +5,11 @@ import Image from 'next/image'
 import { Camera, Video, Star } from 'lucide-react'
 
 async function getMedia() {
-  return prisma.mediaItem.findMany({ orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }] })
+  try {
+    return await prisma.mediaItem.findMany({ orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }] })
+  } catch {
+    return []
+  }
 }
 
 export default async function GalleryPage() {

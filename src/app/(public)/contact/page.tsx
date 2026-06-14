@@ -5,10 +5,14 @@ import { Phone, Mail, MapPin, ExternalLink, MessageCircle } from 'lucide-react'
 import { generateQRCodeDataURL } from '@/lib/qrcode'
 
 async function getContent() {
-  const keys = ['contact_person_name', 'contact_person_phone', 'contact_person_email',
-                 'contact_person2_name', 'contact_person2_phone']
-  const rows = await prisma.siteContent.findMany({ where: { key: { in: keys } } })
-  return Object.fromEntries(rows.map(r => [r.key, r.value]))
+  try {
+    const keys = ['contact_person_name', 'contact_person_phone', 'contact_person_email',
+                  'contact_person2_name', 'contact_person2_phone']
+    const rows = await prisma.siteContent.findMany({ where: { key: { in: keys } } })
+    return Object.fromEntries(rows.map(r => [r.key, r.value]))
+  } catch {
+    return {}
+  }
 }
 
 const VENUES = [
