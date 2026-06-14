@@ -1,11 +1,154 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Trash2, QrCode, Mail, Edit2, X, Download } from 'lucide-react'
+import { Plus, Trash2, QrCode, Edit2, X, Download, ChevronDown, Check } from 'lucide-react'
 import { useToast } from '@/app/toaster'
+
+/* ── Group combobox ───────────────────────────────────────────────── */
+const PRESET_GROUPS = [
+  "Bride's Family",
+  "Groom's Family",
+  'Family',
+  'Close Friends',
+  'Friends',
+  'Colleagues',
+  'Church',
+  'VIP',
+  'Other',
+]
+
+function GroupSelect({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const [open,        setOpen]        = useState(false)
+  const [query,       setQuery]       = useState('')
+  const [customMode,  setCustomMode]  = useState(false)
+  const [customValue, setCustomValue] = useState('')
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // When the form is reset / edit is opened, sync state
+  useEffect(() => {
+    if (!value) { setQuery(''); setCustomMode(false); setCustomValue(''); return }
+    if (PRESET_GROUPS.includes(value) && value !== 'Other') {
+      setQuery(value)
+      setCustomMode(false)
+    } else {
+      setCustomMode(true)
+      setCustomValue(value)
+      setQuery('Other')
+    }
+  }, [value])
+
+  // Close on outside click
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
+  }, [])
+
+  const filtered = PRESET_GROUPS.filter(g =>
+    g.toLowerCase().includes(query.toLowerCase())
+  )
+
+  function select(option: string) {
+    setOpen(false)
+    if (option === 'Other') {
+      setCustomMode(true)
+      setQuery('Other')
+      setCustomValue('')
+      onChange('')
+    } else {
+      setCustomMode(false)
+      setQuery(option)
+      setCustomValue('')
+      onChange(option)
+    }
+  }
+
+  function handleQueryChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(e.target.value)
+    setOpen(true)
+    // If the user types something that doesn't match presets, treat as custom
+    const match = PRESET_GROUPS.find(g => g.toLowerCase() === e.target.value.toLowerCase())
+    if (match && match !== 'Other') {
+      setCustomMode(false)
+      onChange(match)
+    } else if (e.target.value && !PRESET_GROUPS.some(g => g.toLowerCase().startsWith(e.target.value.toLowerCase()))) {
+      setCustomMode(false)
+      onChange(e.target.value)
+    }
+  }
+
+  return (
+    <div ref={wrapRef} className="space-y-2">
+      {/* Combobox trigger */}
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={handleQueryChange}
+          onFocus={() => setOpen(true)}
+          placeholder="Search or choose group…"
+          className="input-field pr-8"
+          autoComplete="off"
+        />
+        <button
+          type="button"
+          onClick={() => setOpen(o => !o)}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+          <ChevronDown size={15} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Dropdown */}
+        {open && (
+          <ul className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-52 overflow-y-auto py-1">
+            {filtered.length === 0 && (
+              <li className="px-3 py-2 text-xs text-gray-400">No matches — select "Other" to type freely</li>
+            )}
+            {filtered.map(opt => (
+              <li
+                key={opt}
+                onMouseDown={() => select(opt)}
+                className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-purple-50 hover:text-purple-800 rounded-lg mx-1
+                  ${opt === 'Other' ? 'border-t border-gray-100 mt-1 pt-2 text-purple-600 font-medium' : ''}
+                  ${(value === opt || (opt === 'Other' && customMode)) ? 'bg-purple-50 text-purple-800 font-medium' : 'text-gray-700'}
+                `}
+              >
+                <Check
+                  size={13}
+                  className={`flex-shrink-0 ${(value === opt || (opt === 'Other' && customMode)) ? 'opacity-100 text-purple-600' : 'opacity-0'}`}
+                />
+                {opt}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Free-text field shown when "Other" is selected */}
+      {customMode && (
+        <input
+          type="text"
+          value={customValue}
+          onChange={e => { setCustomValue(e.target.value); onChange(e.target.value) }}
+          placeholder="Type your custom group…"
+          className="input-field"
+          autoFocus
+        />
+      )}
+    </div>
+  )
+}
 
 const schema = z.object({
   name:        z.string().min(1, 'Name is required'),
@@ -39,9 +182,10 @@ export default function InviteesPage() {
   const [search, setSearch]       = useState('')
   const { toast } = useToast()
 
-  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
+  const groupValue = watch('group') ?? ''
 
   const load = useCallback(async () => {
     const res = await fetch('/api/invitees')
@@ -199,7 +343,10 @@ export default function InviteesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="label">Group</label>
-                  <input {...register('group')} className="input-field" placeholder="Family, Friends…" />
+                  <GroupSelect
+                    value={groupValue}
+                    onChange={v => setValue('group', v, { shouldValidate: true })}
+                  />
                 </div>
                 <div>
                   <label className="label">Table Number</label>
