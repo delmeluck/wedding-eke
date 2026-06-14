@@ -124,18 +124,41 @@ model AgendaItem {
 }
 
 model Gift {
-  id           String   @id @default(cuid())
+  id           String       @id @default(cuid())
   name         String
   description  String?
   price        Float?
   imageUrl     String?
   donationLink String?
   category     String?
-  priority     Int      @default(0)
-  claimed      Boolean  @default(false)
+  // Payment method: physical | momo_mtn | momo_vodafone | momo_airtel | bank | token
+  giftType     String       @default("physical")
+  momoNumber   String?      // MTN/Vodafone/AirtelTigo number
+  momoName     String?      // Account name on MoMo
+  bankName     String?      // e.g. GCB, Ecobank, Fidelity, Stanbic
+  bankAccount  String?
+  bankBranch   String?
+  priority     Int          @default(0)
+  claimed      Boolean      @default(false)
   claimedBy    String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  coupons      GiftCoupon[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+// Gift coupons / digital tokens — unique codes sent to guests
+model GiftCoupon {
+  id        String    @id @default(cuid())
+  gift      Gift      @relation(fields: [giftId], references: [id], onDelete: Cascade)
+  giftId    String
+  code      String    @unique  // e.g. GIFT-EKE-X7K2
+  value     Float?             // GHS value
+  note      String?
+  sentTo    String?            // email sent to
+  sentAt    DateTime?
+  claimedBy String?            // name of claimer
+  claimedAt DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model MediaItem {
