@@ -78,7 +78,7 @@ const MOSAIC_PHOTOS = [
     span: '',
   },
   {
-    src: 'https://images.unsplash.com/photo-1490750967868-88df5691cc14?w=700&h=500&fit=crop&auto=format&q=85',
+    src: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&h=500&fit=crop&auto=format&q=85',
     alt: 'Wedding flower bouquet',
     caption: 'In Full Bloom',
     span: '',
@@ -112,7 +112,7 @@ const GALLERY_PHOTOS = [
     caption: 'Grand Celebration',
   },
   {
-    src: 'https://images.unsplash.com/photo-1490750967868-88df5691cc14?w=600&h=800&fit=crop&auto=format&q=85',
+    src: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=800&fit=crop&auto=format&q=85',
     alt: 'Bridal bouquet',
     caption: 'In Full Bloom',
   },
