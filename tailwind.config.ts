@@ -10,25 +10,25 @@ const config: Config = {
     extend: {
       colors: {
         purple: {
-          50:  '#fdf5fd',
-          100: '#f8eaf8',
-          200: '#f0d0f0',
-          300: '#e0aede',
-          400: '#cc84ca',
-          500: '#b85cb5',
-          600: '#9e409b',
-          700: '#82307f',
-          800: '#6b2568',   /* main mauve — buttons, nav RSVP pill  */
-          900: '#4f1750',
-          950: '#350b36',   /* dark section backgrounds              */
+          50:  '#F5F3FF',
+          100: '#EDE8FF',
+          200: '#E6E6FA',   /* Lavender                              */
+          300: '#CCCCFF',   /* Periwinkle                            */
+          400: '#C3B1E1',   /* Light amethyst                        */
+          500: '#BDB5D5',   /* Blue-gray lavender                    */
+          600: '#9B8DC8',   /* Medium periwinkle                     */
+          700: '#7B6DAF',   /* Deeper periwinkle — icon accents      */
+          800: '#5B4E9A',   /* Main CTA — buttons, nav RSVP pill     */
+          900: '#3D3575',   /* Dark sections                         */
+          950: '#252048',   /* Deepest — hero, admin sidebar         */
         },
         lavender: {
-          50:  '#f8f0f8',
-          100: '#f0dff0',
-          200: '#e0c4e0',
-          300: '#cca0cc',   /* mild mauve accent text                */
-          400: '#b47cb4',
-          500: '#985898',
+          50:  '#F8F5FF',
+          100: '#F0EAFF',
+          200: '#E0B0FF',   /* Bright mauve-lavender                 */
+          300: '#D8BFD8',   /* Thistle — soft accent text on dark    */
+          400: '#C3B1E1',   /* Light amethyst                        */
+          500: '#BDB5D5',   /* Blue-gray lavender                    */
         },
         earth: {
           50:  '#fdf8f0',
@@ -52,8 +52,8 @@ const config: Config = {
         script: ['var(--font-great-vibes)', 'cursive'],
       },
       backgroundImage: {
-        'hero-gradient':    'linear-gradient(135deg, #350b36 0%, #4f1750 30%, #6b2568 60%, #7c3020 100%)',
-        'soft-gradient':    'linear-gradient(180deg, #f8f0f8 0%, #fef7ed 100%)',
+        'hero-gradient':    'linear-gradient(135deg, #252048 0%, #3D3575 30%, #5B4E9A 60%, #4A3D7A 100%)',
+        'soft-gradient':    'linear-gradient(180deg, #F5F3FF 0%, #fef7ed 100%)',
         'gold-shimmer':     'linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.4) 50%, transparent 100%)',
         'card-shine':       'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%)',
       },

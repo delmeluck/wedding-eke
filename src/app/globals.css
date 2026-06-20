@@ -10,9 +10,9 @@
   --font-great-vibes: 'Great Vibes', cursive;
   --font-lato: 'Lato', system-ui, sans-serif;
   --gold: #C9A84C;
-  --purple-950: #350b36;   /* deep mauve */
-  --purple-800: #6b2568;   /* main mauve */
-  --lavender-300: #cca0cc; /* mild mauve accent */
+  --purple-950: #252048;   /* deep indigo-lavender */
+  --purple-800: #5B4E9A;   /* main amethyst */
+  --lavender-300: #D8BFD8; /* thistle — soft accent on dark */
 }
 
 /* ─── Base ───────────────────────────────────────────── */
@@ -217,7 +217,7 @@
 
 .bento-card:hover {
   transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 20px 60px rgba(59, 7, 100, 0.4);
+  box-shadow: 0 20px 60px rgba(37, 32, 72, 0.45);
 }
 
 /* ─── Gold line ornament ─────────────────────────────── */
@@ -245,7 +245,7 @@
   top: 0;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(180deg, transparent, #c4b5fd 20%, #c4b5fd 80%, transparent);
+  background: linear-gradient(180deg, transparent, #CCCCFF 20%, #C3B1E1 80%, transparent);
   transform: translateX(-50%);
 }
 
@@ -340,9 +340,9 @@
 
 /* ─── Custom scrollbar ───────────────────────────────── */
 ::-webkit-scrollbar        { width: 5px; }
-::-webkit-scrollbar-track  { background: #f5f3ff; }
-::-webkit-scrollbar-thumb  { background: #c4b5fd; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+::-webkit-scrollbar-track  { background: #F5F3FF; }
+::-webkit-scrollbar-thumb  { background: #C3B1E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9B8DC8; }
 
 /* ─── Utility delays ─────────────────────────────────── */
 .delay-100 { animation-delay: 0.1s; }

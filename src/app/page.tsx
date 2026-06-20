@@ -439,7 +439,7 @@ export default function HomePage() {
       >
         {/* Decorative bg text */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <span className="font-script text-[22vw] leading-none" style={{ color: 'rgba(107,37,104,0.03)' }}>
+          <span className="font-script text-[22vw] leading-none" style={{ color: 'rgba(91,78,154,0.04)' }}>
             Love
           </span>
         </div>
@@ -452,7 +452,7 @@ export default function HomePage() {
             animate={mosaicInView ? 'visible' : 'hidden'}
             className="text-center mb-14"
           >
-            <motion.p variants={fadeUp} className="text-xs uppercase tracking-[0.42em] font-sans mb-3" style={{ color: '#9e409b' }}>
+            <motion.p variants={fadeUp} className="text-xs uppercase tracking-[0.42em] font-sans mb-3" style={{ color: '#7B6DAF' }}>
               Preparations &amp; Celebrations
             </motion.p>
             <motion.h2 variants={fadeUp} className="font-serif text-4xl md:text-5xl text-purple-900 mb-3">
@@ -670,13 +670,13 @@ export default function HomePage() {
       <section
         ref={coupleRef}
         className="relative py-28 px-4 overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #220828 0%, #350b36 50%, #1a0618 100%)' }}
+        style={{ background: 'linear-gradient(160deg, #1A1640 0%, #252048 50%, #110E38 100%)' }}
       >
         {/* Ambient glows */}
         <div className="absolute top-0 left-0 w-[50vw] h-64 rounded-full opacity-30 pointer-events-none"
-             style={{ background: 'radial-gradient(ellipse at left, #6b2568, transparent 70%)' }} />
+             style={{ background: 'radial-gradient(ellipse at left, #5B4E9A, transparent 70%)' }} />
         <div className="absolute bottom-0 right-0 w-[40vw] h-64 rounded-full opacity-20 pointer-events-none"
-             style={{ background: 'radial-gradient(ellipse at right, #7c3020, transparent 70%)' }} />
+             style={{ background: 'radial-gradient(ellipse at right, #4A3D7A, transparent 70%)' }} />
 
         {/* Decorative corner */}
         <div className="absolute top-8 right-8 opacity-[0.06] pointer-events-none hidden lg:block">
@@ -693,7 +693,7 @@ export default function HomePage() {
             animate={coupleInView ? 'visible' : 'hidden'}
             className="text-center mb-16"
           >
-            <motion.p variants={fadeUp} className="text-xs uppercase tracking-[0.45em] font-sans mb-3" style={{ color: '#cca0cc', opacity: 0.65 }}>
+            <motion.p variants={fadeUp} className="text-xs uppercase tracking-[0.45em] font-sans mb-3" style={{ color: '#D8BFD8', opacity: 0.65 }}>
               The Celebration
             </motion.p>
             <motion.h2 variants={fadeUp} className="font-serif text-4xl md:text-5xl mb-3" style={{ color: 'white' }}>
@@ -702,7 +702,7 @@ export default function HomePage() {
             <motion.div variants={fadeUp} className="ornament-line max-w-52 mx-auto text-xs" style={{ color: 'rgba(201,168,76,0.5)' }}>
               ✦
             </motion.div>
-            <motion.p variants={fadeUp} className="mt-5 font-sans max-w-lg mx-auto leading-relaxed text-sm" style={{ color: '#cca0cc', opacity: 0.7 }}>
+            <motion.p variants={fadeUp} className="mt-5 font-sans max-w-lg mx-auto leading-relaxed text-sm" style={{ color: '#D8BFD8', opacity: 0.7 }}>
               Two remarkable souls, united by love and guided by faith — beginning their greatest chapter together.
             </motion.p>
           </motion.div>
@@ -722,7 +722,7 @@ export default function HomePage() {
                 <div
                   className="monogram-ring w-full h-full rounded-full flex items-center justify-center"
                   style={{
-                    background: 'linear-gradient(135deg, #350b36, #6b2568, #4f1750)',
+                    background: 'linear-gradient(135deg, #252048, #5B4E9A, #3D3575)',
                     border: '2px solid rgba(201,168,76,0.4)',
                   }}
                 >
@@ -751,7 +751,7 @@ export default function HomePage() {
                 The Groom
               </p>
               <div className="w-16 h-px mx-auto mb-4" style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent)' }} />
-              <p className="font-sans text-sm leading-relaxed" style={{ color: '#cca0cc', opacity: 0.75 }}>
+              <p className="font-sans text-sm leading-relaxed" style={{ color: '#D8BFD8', opacity: 0.75 }}>
                 A man of vision, integrity, and warmth — Ekow brings strength and tenderness to every room he enters.
                 His love for Ekua is a reflection of his devotion to all that matters most.
               </p>
@@ -775,7 +775,7 @@ export default function HomePage() {
                 <div
                   className="monogram-ring w-full h-full rounded-full flex items-center justify-center"
                   style={{
-                    background: 'linear-gradient(135deg, #4f1750, #9e409b, #6b2568)',
+                    background: 'linear-gradient(135deg, #3D3575, #7B6DAF, #5B4E9A)',
                     border: '2px solid rgba(201,168,76,0.4)',
                   }}
                 >
@@ -804,7 +804,7 @@ export default function HomePage() {
                 The Bride
               </p>
               <div className="w-16 h-px mx-auto mb-4" style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent)' }} />
-              <p className="font-sans text-sm leading-relaxed" style={{ color: '#cca0cc', opacity: 0.75 }}>
+              <p className="font-sans text-sm leading-relaxed" style={{ color: '#D8BFD8', opacity: 0.75 }}>
                 Grace personified — Ekua radiates joy, wisdom, and an effortless elegance that captivates all who
                 know her. Her love for Ekow is written in every smile she graces him with.
               </p>
@@ -840,7 +840,7 @@ export default function HomePage() {
       ════════════════════════════════════════════════ */}
       <section className="py-28 px-4 bg-purple-950 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[65vw] h-72 rounded-full pointer-events-none"
-             style={{ background: 'radial-gradient(ellipse at top, rgba(107,37,104,0.25), transparent 70%)' }} />
+             style={{ background: 'radial-gradient(ellipse at top, rgba(91,78,154,0.25), transparent 70%)' }} />
         {/* Watermark */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
           <span className="font-script text-[25vw] leading-none" style={{ color: 'rgba(201,168,76,0.025)' }}>
@@ -972,7 +972,7 @@ export default function HomePage() {
       <section
         ref={bentoSecRef}
         className="py-24 px-4 border-t"
-        style={{ background: 'linear-gradient(180deg, #200628 0%, #350b36 100%)', borderColor: 'rgba(107,37,104,0.5)' }}
+        style={{ background: 'linear-gradient(180deg, #1A1640 0%, #252048 100%)', borderColor: 'rgba(91,78,154,0.5)' }}
       >
         <div className="max-w-5xl mx-auto">
           <motion.div

@@ -59,7 +59,7 @@ export function WelcomeModal() {
             />
             {/* Radial glow center */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-20"
-                 style={{ background: 'radial-gradient(circle, #6b2568, transparent 70%)' }} />
+                 style={{ background: 'radial-gradient(circle, #5B4E9A, transparent 70%)' }} />
 
             {/* Falling petals */}
             {PETALS.map((p, i) => (
@@ -132,7 +132,7 @@ export function WelcomeModal() {
 
                 {/* Eyebrow */}
                 <p className="text-center font-sans text-[10px] uppercase tracking-[0.5em] mb-4"
-                   style={{ color: '#cca0cc', opacity: 0.7 }}>
+                   style={{ color: '#D8BFD8', opacity: 0.7 }}>
                   You are cordially invited
                 </p>
 
@@ -172,7 +172,7 @@ export function WelcomeModal() {
                     <Calendar size={14} style={{ color: '#C9A84C', flexShrink: 0 }} />
                     <div>
                       <p className="text-white/85 font-sans text-sm font-medium leading-tight">19 December 2026</p>
-                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#cca0cc', opacity: 0.65 }}>Wedding Ceremony · 10:00 AM</p>
+                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#D8BFD8', opacity: 0.65 }}>Wedding Ceremony · 10:00 AM</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3 border border-white/8"
@@ -180,7 +180,7 @@ export function WelcomeModal() {
                     <MapPin size={14} style={{ color: '#C9A84C', flexShrink: 0 }} />
                     <div>
                       <p className="text-white/85 font-sans text-sm font-medium leading-tight">Bethany Methodist Church</p>
-                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#cca0cc', opacity: 0.65 }}>Dzorwulu, Accra, Ghana</p>
+                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#D8BFD8', opacity: 0.65 }}>Dzorwulu, Accra, Ghana</p>
                     </div>
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export function WelcomeModal() {
                   href="/rsvp"
                   onClick={dismiss}
                   className="block w-full py-3 text-center rounded-full font-sans text-sm transition-all duration-300 border hover:bg-white/5"
-                  style={{ color: '#cca0cc', borderColor: 'rgba(201,168,76,0.25)' }}
+                  style={{ color: '#D8BFD8', borderColor: 'rgba(201,168,76,0.25)' }}
                 >
                   RSVP Now →
                 </Link>

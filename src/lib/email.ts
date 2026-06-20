@@ -129,13 +129,13 @@ export async function sendMagicLink({
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fff;">
         <div style="text-align:center;margin-bottom:28px;">
-          <h2 style="color:#6b2568;font-size:28px;margin:0;">E &amp; E Wedding</h2>
-          <p style="color:#9e409b;font-size:13px;margin:4px 0 0;">Admin Portal</p>
+          <h2 style="color:#5B4E9A;font-size:28px;margin:0;">E &amp; E Wedding</h2>
+          <p style="color:#7B6DAF;font-size:13px;margin:4px 0 0;">Admin Portal</p>
         </div>
         <p style="color:#451a03;line-height:1.7;">Click the button below to sign in to the admin dashboard. This link expires in 24 hours.</p>
         <div style="text-align:center;margin:28px 0;">
           <a href="${url}"
-             style="display:inline-block;background:#6b2568;color:#fff;text-align:center;
+             style="display:inline-block;background:#5B4E9A;color:#fff;text-align:center;
                     padding:14px 32px;border-radius:50px;text-decoration:none;
                     font-family:sans-serif;font-size:15px;font-weight:600;">
             Sign In to Admin
@@ -185,9 +185,9 @@ export function inviteeEmailTemplate({
 
           <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#350b36,#4f1750,#6b2568,#7c3020);
+            <td style="background:linear-gradient(135deg,#252048,#3D3575,#5B4E9A,#4A3D7A);
                        padding:52px 40px;text-align:center;">
-              <p style="color:#cca0cc;font-family:sans-serif;font-size:11px;
+              <p style="color:#D8BFD8;font-family:sans-serif;font-size:11px;
                         letter-spacing:0.35em;text-transform:uppercase;margin:0 0 12px;">
                 You are cordially invited
               </p>
@@ -195,14 +195,14 @@ export function inviteeEmailTemplate({
                          margin:0;font-style:italic;line-height:1.1;">
                 E &amp; E
               </h1>
-              <p style="color:#e0aede;font-family:Georgia,serif;font-size:20px;
+              <p style="color:#C3B1E1;font-family:Georgia,serif;font-size:20px;
                         margin:10px 0 0;font-style:italic;">
                 Ekow &amp; Ekua
               </p>
               <!-- Gold divider -->
               <div style="margin:20px auto;max-width:160px;height:1px;
                           background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
-              <p style="color:#cca0cc;font-family:sans-serif;font-size:11px;
+              <p style="color:#D8BFD8;font-family:sans-serif;font-size:11px;
                         letter-spacing:0.3em;text-transform:uppercase;margin:0;">
                 Wedding Invitation
               </p>
@@ -214,7 +214,7 @@ export function inviteeEmailTemplate({
             <td style="background:#fef7ed;padding:44px 40px;">
 
               <!-- Dear name -->
-              <p style="font-size:22px;color:#4f1750;text-align:center;margin:0 0 16px;">
+              <p style="font-size:22px;color:#3D3575;text-align:center;margin:0 0 16px;">
                 Dear <em>${name}</em>,
               </p>
 
@@ -230,21 +230,21 @@ export function inviteeEmailTemplate({
                             margin:0 0 32px;">
                 <tr>
                   <td style="padding:24px;text-align:center;">
-                    <p style="font-family:sans-serif;font-size:11px;color:#9e409b;
+                    <p style="font-family:sans-serif;font-size:11px;color:#7B6DAF;
                                letter-spacing:0.3em;text-transform:uppercase;margin:0 0 8px;">
                       Save the Date
                     </p>
-                    <p style="font-size:22px;color:#350b36;margin:0 0 4px;font-weight:bold;">
+                    <p style="font-size:22px;color:#252048;margin:0 0 4px;font-weight:bold;">
                       ${weddingDate}
                     </p>
-                    <p style="color:#6b2568;font-size:15px;margin:0;">
+                    <p style="color:#5B4E9A;font-size:15px;margin:0;">
                       📍 ${venue}
                     </p>
                     ${mapLink ? `
                     <div style="margin-top:14px;">
                       <a href="${mapLink}"
-                         style="display:inline-block;color:#6b2568;font-family:sans-serif;
-                                font-size:13px;text-decoration:none;border:1px solid #6b2568;
+                         style="display:inline-block;color:#5B4E9A;font-family:sans-serif;
+                                font-size:13px;text-decoration:none;border:1px solid #5B4E9A;
                                 padding:8px 18px;border-radius:50px;">
                         Get Directions →
                       </a>
@@ -257,18 +257,18 @@ export function inviteeEmailTemplate({
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="text-align:center;padding:0 0 8px;">
-                    <p style="font-family:sans-serif;font-size:13px;color:#6b2568;
+                    <p style="font-family:sans-serif;font-size:13px;color:#5B4E9A;
                                font-weight:600;margin:0 0 4px;">
                       Your Personal QR Code
                     </p>
-                    <p style="font-family:sans-serif;font-size:12px;color:#9e409b;
+                    <p style="font-family:sans-serif;font-size:12px;color:#7B6DAF;
                                margin:0 0 16px;">
                       Present this at the venue for check-in
                     </p>
                     <img src="${qrCodeDataUrl}"
                          alt="Your QR Code for check-in"
                          width="180" height="180"
-                         style="border:3px solid #6b2568;border-radius:12px;
+                         style="border:3px solid #5B4E9A;border-radius:12px;
                                 display:block;margin:0 auto;" />
                   </td>
                 </tr>
@@ -278,7 +278,7 @@ export function inviteeEmailTemplate({
               ${rsvpLink ? `
               <div style="text-align:center;margin:32px 0 0;">
                 <a href="${rsvpLink}"
-                   style="display:inline-block;background:#6b2568;color:#fff;
+                   style="display:inline-block;background:#5B4E9A;color:#fff;
                           font-family:sans-serif;font-size:15px;font-weight:600;
                           text-decoration:none;padding:14px 36px;border-radius:50px;">
                   Confirm Attendance →
@@ -292,8 +292,8 @@ export function inviteeEmailTemplate({
 
           <!-- Footer -->
           <tr>
-            <td style="background:#350b36;padding:28px 40px;text-align:center;">
-              <p style="color:#cca0cc;font-family:Georgia,serif;font-style:italic;
+            <td style="background:#252048;padding:28px 40px;text-align:center;">
+              <p style="color:#D8BFD8;font-family:Georgia,serif;font-style:italic;
                         font-size:15px;margin:0 0 6px;">
                 With love &amp; joy,
               </p>
@@ -301,7 +301,7 @@ export function inviteeEmailTemplate({
                         font-style:italic;margin:0;">
                 Ekow &amp; Ekua
               </p>
-              <p style="color:#9e409b;font-family:sans-serif;font-size:11px;
+              <p style="color:#7B6DAF;font-family:sans-serif;font-size:11px;
                         margin:12px 0 0;">
                 19 December 2026 · Bethany Methodist Church, Dzorwulu, Accra
               </p>

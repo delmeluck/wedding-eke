@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       subject: '✅ E & E Wedding — Email Config Test',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
-          <h2 style="color:#6b2568;">Email is working! 🎉</h2>
+          <h2 style="color:#5B4E9A;">Email is working! 🎉</h2>
           <p>Your wedding site email configuration is set up correctly.</p>
           <p style="color:#aaa;font-size:12px;margin-top:24px;">
             Provider: ${process.env.EMAIL_PROVIDER ?? 'smtp'} ·
