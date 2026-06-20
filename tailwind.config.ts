@@ -25,7 +25,7 @@ const config: Config = {
         lavender: {
           50:  '#F8F5FF',
           100: '#F0EAFF',
-          200: '#E0B0FF',   /* Bright mauve-lavender                 */
+          200: '#E6E6FA',   /* Bright mauve-lavender                 */
           300: '#D8BFD8',   /* Thistle — soft accent text on dark    */
           400: '#C3B1E1',   /* Light amethyst                        */
           500: '#BDB5D5',   /* Blue-gray lavender                    */

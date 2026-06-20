@@ -140,28 +140,38 @@ export default async function ContactPage() {
                   </div>
                 </div>
 
-                {/* QR Code */}
-                <div className="flex flex-col items-center bg-white rounded-2xl p-5 mb-5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={qrMap[v.label]}
-                    alt={`Directions QR for ${v.label}`}
-                    className="w-40 h-40"
+                {/* Embedded map */}
+                <div className="rounded-xl overflow-hidden mb-4 border border-white/10">
+                  <iframe
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(v.desc)}&output=embed&z=14`}
+                    width="100%"
+                    height="200"
+                    style={{ border: 0, filter: 'brightness(0.85) saturate(0.7)' }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={`Map of ${v.label}`}
                   />
-                  <p className="text-earth-400 text-xs mt-3 font-sans">Scan to open in Maps</p>
                 </div>
 
-                <a
-                  href={v.mapLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl
-                             bg-gold/10 border border-gold/20 text-gold text-sm font-medium
-                             hover:bg-gold/20 transition-colors duration-300"
-                >
-                  <ExternalLink size={14} />
-                  Open in Google Maps
-                </a>
+                <div className="flex gap-2">
+                  <a
+                    href={v.mapLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
+                               bg-gold text-purple-950 text-sm font-semibold
+                               hover:bg-yellow-300 transition-colors duration-300"
+                  >
+                    <ExternalLink size={14} />
+                    Get Directions
+                  </a>
+                  {/* QR for mobile scanning */}
+                  <div className="flex flex-col items-center bg-white rounded-xl p-2 border border-white/20" title="Scan to open in Maps">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrMap[v.label]} alt="QR" className="w-10 h-10" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>

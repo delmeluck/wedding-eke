@@ -129,6 +129,11 @@ export default function VenuesPage() {
                 <input value={form.mapLink ?? ''} onChange={f('mapLink')} className="input-field" placeholder="https://maps.google.com/…" />
               </div>
               <div>
+                <label className="label">Coordinates (lat, lng)</label>
+                <input value={(form as {coordinates?: string}).coordinates ?? ''} onChange={f('coordinates' as keyof Venue)} className="input-field" placeholder="5.6037, -0.1870" />
+                <p className="text-xs text-gray-400 mt-1">Find on Google Maps → right-click a point → copy lat/lng</p>
+              </div>
+              <div>
                 <label className="label">Description</label>
                 <textarea value={form.description ?? ''} onChange={f('description')} rows={2} className="input-field resize-none" />
               </div>

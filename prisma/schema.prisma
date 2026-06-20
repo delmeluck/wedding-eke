@@ -68,19 +68,22 @@ model SiteContent {
 }
 
 model Invitee {
-  id          String   @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  plusOne     Boolean  @default(false)
-  plusOneName String?
-  tableNumber String?
-  group       String?
-  notes       String?
-  qrCode      String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  rsvp        RSVP?
+  id             String    @id @default(cuid())
+  name           String
+  email          String?
+  phone          String?
+  plusOne        Boolean   @default(false)
+  plusOneName    String?
+  tableNumber    String?
+  group          String?
+  notes          String?
+  qrCode         String    @unique
+  rsvpToken      String?   @unique  // unique token for email-link RSVP
+  inviteSentAt   DateTime?           // when the invitation email was sent
+  reminderSentAt DateTime?           // when the last reminder was sent
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  rsvp           RSVP?
 }
 
 model RSVP {

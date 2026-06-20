@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Trash2, QrCode, Edit2, X, Download, ChevronDown, Check } from 'lucide-react'
+import { Plus, Trash2, QrCode, Edit2, X, Download, ChevronDown, Check, Send, Bell } from 'lucide-react'
 import { useToast } from '@/app/toaster'
 
 /* ── Group combobox ───────────────────────────────────────────────── */
@@ -171,7 +171,9 @@ interface Invitee {
   tableNumber?: string
   group?: string
   qrCode: string
-  rsvp?: { attending: boolean; plusOne: boolean }
+  inviteSentAt?: string | null
+  reminderSentAt?: string | null
+  rsvp?: { attending: boolean; plusOne: boolean } | null
 }
 
 export default function InviteesPage() {
@@ -180,6 +182,7 @@ export default function InviteesPage() {
   const [editing, setEditing]     = useState<Invitee | null>(null)
   const [qrModal, setQrModal]     = useState<{ name: string; dataUrl: string; url: string } | null>(null)
   const [search, setSearch]       = useState('')
+  const [sending, setSending]     = useState<string | null>(null)
   const { toast } = useToast()
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -230,6 +233,24 @@ export default function InviteesPage() {
     if (res.ok) { load(); toast({ title: 'Deleted', type: 'success' }) }
   }
 
+  async function sendInvite(inv: Invitee) {
+    if (!inv.email) { toast({ title: 'No email address for this invitee', type: 'error' }); return }
+    setSending(inv.id)
+    const res = await fetch('/api/invitees/send-invites', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ inviteeIds: [inv.id] }),
+    })
+    setSending(null)
+    if (res.ok) {
+      const d = await res.json()
+      toast({ title: d.sent > 0 ? `Invitation sent to ${inv.name}` : 'Send failed', type: d.sent > 0 ? 'success' : 'error' })
+      load()
+    } else {
+      toast({ title: 'Failed to send invitation', type: 'error' })
+    }
+  }
+
   async function showQR(inv: Invitee) {
     const res = await fetch(`/api/invitees/${inv.id}/qr`)
     if (res.ok) {
@@ -253,14 +274,32 @@ export default function InviteesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="font-serif text-3xl text-gray-800">Invitees</h1>
-          <p className="text-gray-500 text-sm mt-1">{invitees.length} total invitees</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {invitees.length} total · {invitees.filter(i => i.inviteSentAt).length} invited · {invitees.filter(i => i.rsvp).length} responded
+          </p>
         </div>
-        <button onClick={openAdd} className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> Add Invitee
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={async () => {
+              const pending = invitees.filter(i => i.email && !i.inviteSentAt)
+              if (!pending.length) { toast({ title: 'All guests with email have been invited', type: 'error' }); return }
+              if (!confirm(`Send invitation emails to ${pending.length} uninvited guests?`)) return
+              const res = await fetch('/api/invitees/send-invites', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inviteeIds: pending.map(i => i.id) }),
+              })
+              if (res.ok) { const d = await res.json(); toast({ title: `Sent ${d.sent} invitations`, type: 'success' }); load() }
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 border border-purple-200 text-purple-700 hover:bg-purple-100 text-sm font-medium rounded-xl transition-colors">
+            <Send size={14} /> Send All Invites
+          </button>
+          <button onClick={openAdd} className="btn-primary flex items-center gap-2">
+            <Plus size={16} /> Add Invitee
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -279,21 +318,40 @@ export default function InviteesPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
-              {['Name', 'Email', 'Group / Table', 'Plus One', 'RSVP', 'Actions'].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
+              {['Name', 'Email', 'Group / Table', 'RSVP', 'Invite', 'Actions'].map(h => (
+                <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium text-sm">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.map(inv => (
               <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                <td className="px-4 py-3 font-medium text-gray-800">{inv.name}</td>
-                <td className="px-4 py-3 text-gray-500">{inv.email ?? '—'}</td>
-                <td className="px-4 py-3 text-gray-500">
+                <td className="px-4 py-3 font-medium text-gray-800 text-sm">{inv.name}</td>
+                <td className="px-4 py-3 text-gray-500 text-sm">{inv.email ?? '—'}</td>
+                <td className="px-4 py-3 text-gray-500 text-sm">
                   {[inv.group, inv.tableNumber].filter(Boolean).join(' · ') || '—'}
                 </td>
-                <td className="px-4 py-3 text-gray-500">{inv.plusOne ? 'Yes' : 'No'}</td>
                 <td className="px-4 py-3">{rsvpBadge(inv)}</td>
+                <td className="px-4 py-3">
+                  {!inv.email ? (
+                    <span className="text-xs text-gray-300">No email</span>
+                  ) : inv.inviteSentAt ? (
+                    <div>
+                      <span className="text-[10px] text-green-700 bg-green-100 px-2 py-0.5 rounded-full">Sent</span>
+                      {!inv.rsvp && (
+                        <button onClick={() => sendInvite(inv)} disabled={sending === inv.id}
+                          className="ml-1 p-1 rounded hover:bg-amber-50 text-amber-500" title="Resend reminder">
+                          <Bell size={11} />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button onClick={() => sendInvite(inv)} disabled={sending === inv.id}
+                      className="inline-flex items-center gap-1 text-[11px] px-2 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg transition-colors disabled:opacity-50">
+                      {sending === inv.id ? '…' : <><Send size={10} /> Send</>}
+                    </button>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <button onClick={() => showQR(inv)} className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600" title="Show QR">

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { Clock, MapPin, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { VenueMapCard } from '@/components/VenueMap'
 
 async function getAgenda() {
   try {
@@ -75,54 +76,61 @@ export default async function ProgramPage() {
         </div>
       </section>
 
-      {/* ── Venues ─────────────────────────────────────── */}
-      {venues.length > 0 && (
-        <section className="bg-purple-950 py-20 px-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
-              <p className="text-lavender-500/60 text-xs uppercase tracking-[0.4em] font-sans mb-3">Where to go</p>
-              <h2 className="font-serif text-3xl md:text-4xl text-white">Venues</h2>
-            </div>
+      {/* ── Venues + Maps ──────────────────────────────── */}
+      <section className="bg-purple-950 py-20 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-lavender-500/60 text-xs uppercase tracking-[0.4em] font-sans mb-3">Where to go</p>
+            <h2 className="font-serif text-3xl md:text-4xl text-white mb-3">Venues &amp; Directions</h2>
+            <p className="text-lavender-300/60 font-sans text-sm">
+              Tap <strong className="text-gold">Get Directions</strong> for turn-by-turn navigation
+            </p>
+          </div>
+
+          {venues.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {venues.map(v => (
-                <div key={v.id}
-                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6
-                             hover:bg-white/8 transition-colors duration-300">
-                  <p className="text-lavender-500/60 text-xs uppercase tracking-widest mb-2">{v.type}</p>
-                  <h3 className="font-serif text-xl text-white mb-3">{v.name}</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2 text-lavender-300 text-sm">
-                      <MapPin size={14} className="mt-0.5 flex-shrink-0 text-gold" />
-                      <span>{v.address}{v.city ? `, ${v.city}` : ''}</span>
-                    </div>
-                    {v.eventDate && (
-                      <div className="flex items-center gap-2 text-lavender-300 text-sm">
-                        <Clock size={14} className="text-gold flex-shrink-0" />
-                        <span>{v.eventDate}{v.eventTime ? ` · ${v.eventTime}` : ''}</span>
-                      </div>
-                    )}
-                  </div>
-                  {v.description && (
-                    <p className="text-lavender-400/70 text-sm mt-3 leading-relaxed">{v.description}</p>
-                  )}
-                  {v.mapLink && (
-                    <a
-                      href={v.mapLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 mt-4 text-gold text-sm font-medium
-                                 hover:text-yellow-300 transition-colors"
-                    >
-                      <MapPin size={13} /> Get Directions
-                      <ChevronRight size={13} />
-                    </a>
-                  )}
-                </div>
+                <VenueMapCard
+                  key={v.id}
+                  name={v.name}
+                  address={v.address}
+                  city={v.city ?? undefined}
+                  mapLink={v.mapLink ?? undefined}
+                  coordinates={v.coordinates ?? undefined}
+                  type={v.type}
+                />
               ))}
             </div>
+          ) : (
+            /* Fallback static cards when no venues in DB yet */
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <VenueMapCard
+                name="Kasoa Engagement Venue"
+                address="Kasoa"
+                city="Central Region"
+                type="engagement"
+              />
+              <VenueMapCard
+                name="Bethany Methodist Church"
+                address="Dzorwulu"
+                city="Accra"
+                type="ceremony"
+                mapLink="https://www.google.com/maps/search/?api=1&query=Bethany+Methodist+Church+Dzorwulu+Accra"
+              />
+            </div>
+          )}
+
+          {/* Quick directions note */}
+          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
+            <p className="text-lavender-300/70 text-sm font-sans">
+              🚗 Need help getting there? Call our team:
+            </p>
+            <Link href="/contact" className="inline-flex items-center gap-1.5 mt-2 text-gold text-sm font-medium hover:text-yellow-300 transition-colors">
+              Contact the Wedding Team <ChevronRight size={14} />
+            </Link>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ── RSVP Prompt ────────────────────────────────── */}
       <section className="bg-cream py-16 px-4 text-center">
@@ -152,8 +160,7 @@ function EventDay({
   return (
     <div>
       {/* Day header card */}
-      <div className={`bg-gradient-to-r ${accent} rounded-2xl p-6 mb-8 flex items-center gap-4
-                       shadow-xl shadow-purple-950/20`}>
+      <div className={`bg-gradient-to-r ${accent} rounded-2xl p-6 mb-8 flex items-center gap-4 shadow-xl shadow-purple-950/20`}>
         <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0 text-3xl">
           {emoji}
         </div>
@@ -178,20 +185,17 @@ function EventDay({
           {/* Vertical line */}
           <div className="absolute left-3 top-2 bottom-2 w-px bg-gradient-to-b from-lavender-300 via-lavender-200 to-transparent" />
 
-          {items.map((item, i) => (
+          {items.map(item => (
             <div key={item.id} className="relative mb-5 last:mb-0">
               {/* Dot */}
-              <div className="absolute -left-5 top-4 w-4 h-4 rounded-full bg-white border-2 border-purple-600
-                              shadow-sm shadow-purple-200 flex items-center justify-center">
+              <div className="absolute -left-5 top-4 w-4 h-4 rounded-full bg-white border-2 border-purple-600 shadow-sm shadow-purple-200 flex items-center justify-center">
                 <div className="w-1.5 h-1.5 rounded-full bg-purple-600" />
               </div>
 
               {/* Card */}
-              <div className="bg-white rounded-2xl border border-lavender-100 p-5 ml-2
-                              hover:shadow-md hover:border-lavender-200 transition-all duration-300">
+              <div className="bg-white rounded-2xl border border-purple-100 p-5 ml-2 hover:shadow-md hover:border-purple-200 transition-all duration-300">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-purple-50 text-purple-700 text-xs font-sans font-semibold
-                                   px-3 py-1 rounded-full border border-purple-100">
+                  <span className="bg-purple-50 text-purple-700 text-xs font-sans font-semibold px-3 py-1 rounded-full border border-purple-100">
                     {item.time}
                   </span>
                   {item.icon && <span className="text-base">{item.icon}</span>}
