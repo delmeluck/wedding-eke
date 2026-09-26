@@ -39,12 +39,6 @@ export function Navigation() {
   // Close menu on route change
   useEffect(() => { setOpen(false) }, [pathname])
 
-  const navBg = isHome
-    ? scrolled
-      ? 'bg-purple-950/95 backdrop-blur-md shadow-lg shadow-purple-950/20'
-      : 'bg-transparent'
-    : 'bg-purple-950 shadow-md'
-
   return (
     <>
       {/* Scroll progress bar */}
@@ -53,49 +47,55 @@ export function Navigation() {
         style={{ transform: `scaleX(${progress})` }}
       />
 
-      <nav className={cn('fixed top-0 left-0 right-0 z-50 transition-all duration-500', navBg)}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
+        style={{
+          background: 'rgba(255,255,255,0.12)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid rgba(255,255,255,0.18)',
+          boxShadow: '0 4px 24px rgba(154,121,180,0.08)',
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
 
           {/* Logo */}
           <Link
             href="/"
-            className="font-script text-3xl text-gold tracking-wider hover:opacity-80 transition-opacity select-none"
+            className="hover:opacity-80 transition-opacity select-none"
+            style={{ fontFamily: 'Georgia, serif', fontSize: '1.875rem', letterSpacing: '-3px', lineHeight: 1, color: '#7e5a98' }}
           >
-            E &amp; E
+            E<span style={{ fontStyle: 'italic', fontSize: '0.72em', letterSpacing: '-1px' }}>&amp;</span>E
           </Link>
 
-          {/* Desktop links */}
-          <ul className="hidden md:flex items-center gap-0.5">
+          {/* Desktop links — centered */}
+          <ul className="hidden md:flex items-center justify-center gap-1">
             {links.map(({ href, label }) => {
               const active = pathname === href
               return (
                 <li key={href}>
                   <Link
                     href={href}
-                    className={cn(
-                      'relative px-4 py-2 rounded-full text-sm font-sans font-medium transition-all duration-250',
-                      active
-                        ? 'text-white'
-                        : 'text-lavender-200 hover:text-white'
-                    )}
+                    className="nav-link px-4 py-2 text-base font-sans font-medium tracking-wide"
+                    style={{ color: '#9a79b4' }}
+                    data-active={active ? 'true' : undefined}
                   >
-                    {active && (
-                      <span className="absolute inset-0 rounded-full bg-white/10 ring-1 ring-white/20" />
-                    )}
-                    <span className="relative">{label}</span>
+                    {label}
                   </Link>
                 </li>
               )
             })}
-            <li className="ml-3">
-              <Link
-                href="/rsvp"
-                className="btn-primary !py-2 !px-5 !text-sm !shadow-sm"
-              >
-                RSVP
-              </Link>
-            </li>
           </ul>
+
+          {/* RSVP — pinned to the right */}
+          <div className="hidden md:flex justify-end">
+            <Link
+              href="/rsvp"
+              className="btn-primary !py-2 !px-5 !text-sm !shadow-sm"
+            >
+              RSVP
+            </Link>
+          </div>
 
           {/* Mobile toggle */}
           <button

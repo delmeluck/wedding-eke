@@ -160,6 +160,31 @@
   transition: transform 0.1s linear;
 }
 
+/* ─── Nav link underline ─────────────────────────────── */
+.nav-link {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  padding-bottom: 3px;
+  transition: opacity 0.2s;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: #9a79b4;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.nav-link:hover::after,
+.nav-link[data-active]::after {
+  transform: scaleX(1);
+}
+
 /* ─── Countdown page-flip ────────────────────────────── */
 
 /* Top flap folds down (old number disappears) */

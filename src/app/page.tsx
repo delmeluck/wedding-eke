@@ -54,13 +54,13 @@ const SPARKLES = [
 /* ── Marquee items ─────────────────────────────────────── */
 const MARQUEE_ITEMS = [
   '✦ Ekow & Ekua',
-  '✦ 19 December 2026',
-  '✦ Bethany Methodist Church',
-  '✦ Accra, Ghana',
+  '✦ 17 December 2026',
   '✦ E & E',
   '✦ A Celebration of Love',
   '✦ With Joy & Faith',
   '✦ Save the Date',
+  '✦ December 2026',
+  '✦ Ghana',
 ]
 
 /* ── Wedding photos (Unsplash) ─────────────────────────── */
@@ -253,16 +253,14 @@ export default function HomePage() {
       ════════════════════════════════════════════════ */}
       <section
         ref={heroRef}
-        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-hero-gradient"
+        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
       >
-        {/* Parallax glow layer */}
-        <motion.div
-          style={{ y: heroBgY }}
-          className="absolute inset-0 pointer-events-none"
-        >
-          <div className="absolute top-[-12%] left-[-6%]  w-[55vw] h-[55vw] rounded-full bg-purple-700/25 blur-[110px]" />
-          <div className="absolute bottom-[-12%] right-[-6%] w-[65vw] h-[65vw] rounded-full bg-earth-800/20 blur-[130px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[45vw] h-[45vw] rounded-full bg-lavender-500/8 blur-[90px]" />
+        {/* Hero background */}
+        <motion.div style={{ y: heroBgY }} className="absolute inset-0 pointer-events-none">
+          {/* Inpainted photo — all text regions removed, original flowers + arch preserved */}
+          <div className="absolute inset-0" style={{ backgroundImage: 'url(/hero-bg-clean.webp?v=3)', backgroundSize: 'cover', backgroundPosition: 'center top' }} />
+          {/* Very light lavender wash to unify palette and boost text legibility */}
+          <div className="absolute inset-0" style={{ background: 'rgba(242,232,250,0.28)' }} />
         </motion.div>
 
         {/* Sparkle particles */}
@@ -274,111 +272,557 @@ export default function HomePage() {
           />
         ))}
 
-        {/* Large rotating ring ornaments */}
-        <div className="absolute top-14 right-10 w-36 h-36 opacity-[0.08] pointer-events-none hidden md:block">
-          <div className="w-full h-full rounded-full border border-gold animate-rotate-slow" />
-          <div className="absolute inset-5 rounded-full border border-gold/60 animate-rotate-slow" style={{ animationDirection: 'reverse', animationDuration: '18s' }} />
-          <div className="absolute inset-10 rounded-full border border-gold/30 animate-rotate-slow" style={{ animationDuration: '12s' }} />
+        {/* Ring ornaments removed for clean photo look */}
+
+        {/* Falling rose-gold petal rain */}
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" style={{ zIndex: 2 }}>
+          <style>{`
+            @keyframes petalFall {
+              0%   { transform: translateY(-60px) rotate(0deg)   translateX(0px);  opacity:0; }
+              8%   { opacity:0.85; }
+              85%  { opacity:0.5; }
+              100% { transform: translateY(108vh) rotate(500deg) translateX(35px); opacity:0; }
+            }
+          `}</style>
+          {([
+            {l:'3%', d:0,   sz:11, r:20},  {l:'9%', d:1.3, sz:9,  r:-15},
+            {l:'14%',d:2.7, sz:13, r:30},  {l:'20%',d:0.5, sz:8,  r:-22},
+            {l:'24%',d:3.4, sz:10, r:12},  {l:'75%',d:1.9, sz:9,  r:-28},
+            {l:'79%',d:0.8, sz:12, r:18},  {l:'84%',d:2.3, sz:8,  r:-12},
+            {l:'88%',d:4.1, sz:11, r:33},  {l:'93%',d:0.4, sz:9,  r:-20},
+            {l:'6%', d:4.8, sz:8,  r:25},  {l:'17%',d:5.3, sz:10, r:-32},
+            {l:'77%',d:4.4, sz:8,  r:22},  {l:'91%',d:6.0, sz:10, r:-16},
+            {l:'11%',d:7.1, sz:9,  r:15},  {l:'82%',d:7.6, sz:11, r:-8},
+            {l:'19%',d:8.2, sz:8,  r:40},  {l:'87%',d:8.9, sz:9,  r:-35},
+          ] as {l:string;d:number;sz:number;r:number}[]).map((p,i)=>(
+            <svg key={i} width={p.sz} height={p.sz*1.6}
+              style={{position:'absolute',left:p.l,top:'-50px',opacity:0,
+                animation:`petalFall ${8+(i%6)*0.9}s ease-in ${p.d}s infinite`}}
+              viewBox="-1 -1 2 3.2" fill="none">
+              <path d="M0 0 C-0.7-0.5-1.1 0.6 0 2 C1.1 0.6 0.7-0.5 0 0"
+                fill="#9a79b4" fillOpacity="0.65" stroke="#7e5a98" strokeWidth="0.08"
+                transform={`rotate(${p.r},0,1)`}/>
+            </svg>
+          ))}
         </div>
-        <div className="absolute bottom-28 left-10 w-28 h-28 opacity-[0.08] pointer-events-none hidden md:block">
-          <div className="w-full h-full rounded-full border border-gold animate-rotate-slow" style={{ animationDuration: '28s' }} />
-          <div className="absolute inset-5 rounded-full border border-gold/50 animate-rotate-slow" style={{ animationDirection: 'reverse', animationDuration: '20s' }} />
+
+        {/* Left floral decoration — hidden, real flowers in hero photo */}
+        <div className="absolute left-0 top-0 bottom-0 w-[clamp(130px,20vw,280px)] pointer-events-none select-none overflow-hidden" style={{ zIndex: 3, display: 'none' }}>
+          <svg viewBox="0 0 220 900" className="w-full h-full" fill="none" stroke="#9a79b4" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85 }}>
+            <style>{`
+              @keyframes roseBloom {
+                0%   { opacity:0; transform:scale(0) rotate(-20deg); }
+                60%  { opacity:1; transform:scale(1.18) rotate(4deg); }
+                100% { opacity:1; transform:scale(1) rotate(0deg); }
+              }
+              @keyframes roseSway  { 0%,100%{transform:rotate(-5deg);} 50%{transform:rotate(5deg);} }
+              @keyframes roseSwayR { 0%,100%{transform:rotate(5deg);}  50%{transform:rotate(-5deg);} }
+              .r1,.r2,.r3,.r4,.r5,.r6,.r7,.r8,.r9,.r10,
+              .r11,.r12,.r13,.r14,.r15,.r16,.r17,.r18,.r19,.r20,
+              .r21,.r22,.r23,.r24,.r25,.r26,.r27,.r28,.r29,.r30 { transform-box:fill-box; transform-origin:center; }
+              .r1  { animation: roseBloom 1.3s cubic-bezier(.34,1.56,.64,1) .2s  both, roseSway  7s   ease-in-out 1.5s infinite; }
+              .r2  { animation: roseBloom 1.2s cubic-bezier(.34,1.56,.64,1) .5s  both, roseSwayR 8s   ease-in-out 1.7s infinite; }
+              .r3  { animation: roseBloom 1.1s cubic-bezier(.34,1.56,.64,1) .7s  both, roseSway  6.5s ease-in-out 1.8s infinite; }
+              .r4  { animation: roseBloom 1.4s cubic-bezier(.34,1.56,.64,1) 1.0s both, roseSwayR 9s   ease-in-out 2.4s infinite; }
+              .r5  { animation: roseBloom 1.2s cubic-bezier(.34,1.56,.64,1) 1.3s both, roseSway  7.5s ease-in-out 2.5s infinite; }
+              .r6  { animation: roseBloom 1.3s cubic-bezier(.34,1.56,.64,1) 1.6s both, roseSwayR 8.5s ease-in-out 2.9s infinite; }
+              .r7  { animation: roseBloom 1.1s cubic-bezier(.34,1.56,.64,1) 1.9s both, roseSway  6s   ease-in-out 3.0s infinite; }
+              .r8  { animation: roseBloom 1.4s cubic-bezier(.34,1.56,.64,1) 2.2s both, roseSwayR 9.5s ease-in-out 3.6s infinite; }
+              .r9  { animation: roseBloom 1.2s cubic-bezier(.34,1.56,.64,1) 2.5s both, roseSway  7s   ease-in-out 3.7s infinite; }
+              .r10 { animation: roseBloom 1.3s cubic-bezier(.34,1.56,.64,1) 2.8s both, roseSwayR 8s   ease-in-out 4.1s infinite; }
+              .r11 { animation: roseBloom 1.1s cubic-bezier(.34,1.56,.64,1) .35s both, roseSway  7.5s ease-in-out 1.6s infinite; }
+              .r12 { animation: roseBloom 1.2s cubic-bezier(.34,1.56,.64,1) .65s both, roseSwayR 6.5s ease-in-out 1.9s infinite; }
+              .r13 { animation: roseBloom 1.3s cubic-bezier(.34,1.56,.64,1) .85s both, roseSway  9s   ease-in-out 2.2s infinite; }
+              .r14 { animation: roseBloom 1.1s cubic-bezier(.34,1.56,.64,1) 1.15s both, roseSwayR 7s  ease-in-out 2.6s infinite; }
+              .r15 { animation: roseBloom 1.2s cubic-bezier(.34,1.56,.64,1) 1.45s both, roseSway  8s  ease-in-out 2.8s infinite; }
+              .r16 { animation: roseBloom 1.3s cubic-bezier(.34,1.56,.64,1) 1.75s both, roseSwayR 6s  ease-in-out 3.2s infinite; }
+              .r17 { animation: roseBloom 1.1s cubic-bezier(.34,1.56,.64,1) 2.05s both, roseSway  9.5s ease-in-out 3.4s infinite; }
+              .r18 { animation: roseBloom 1.2s cubic-bezier(.34,1.56,.64,1) 2.35s both, roseSwayR 7.5s ease-in-out 3.8s infinite; }
+              .r19 { animation: roseBloom 1.1s cubic-bezier(.34,1.56,.64,1) 2.65s both, roseSway  8.5s ease-in-out 4.0s infinite; }
+              .r20 { animation: roseBloom 1.3s cubic-bezier(.34,1.56,.64,1) 2.95s both, roseSwayR 7s  ease-in-out 4.3s infinite; }
+              .r21 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) .42s both, roseSway  6.8s ease-in-out 1.5s infinite; }
+              .r22 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) .58s both, roseSwayR 7.2s ease-in-out 1.7s infinite; }
+              .r23 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) .92s both, roseSway  8.1s ease-in-out 2.1s infinite; }
+              .r24 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 1.08s both, roseSwayR 6.4s ease-in-out 2.3s infinite; }
+              .r25 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 1.38s both, roseSway  7.8s ease-in-out 2.6s infinite; }
+              .r26 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 1.52s both, roseSwayR 8.8s ease-in-out 2.8s infinite; }
+              .r27 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 1.82s both, roseSway  6.2s ease-in-out 3.1s infinite; }
+              .r28 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 1.98s both, roseSwayR 9.2s ease-in-out 3.3s infinite; }
+              .r29 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 2.28s both, roseSway  7.4s ease-in-out 3.6s infinite; }
+              .r30 { animation: roseBloom 1.0s cubic-bezier(.34,1.56,.64,1) 2.48s both, roseSwayR 8.3s ease-in-out 3.9s infinite; }
+            `}</style>
+
+            {/* Rose 1 — (110,65) R=20 */}
+            <g transform="translate(110,65)"><g className="r1">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-9.5-5.1-12.9-24.5 0-34 C12.9-24.5 9.5-5.1 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-7.5-3.4-10.2-17.7 0-21.1 C10.2-17.7 7.5-3.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="7.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 2 — (25,155) R=18 */}
+            <g transform="translate(25,155)"><g className="r2">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 3 — (175,210) R=14 */}
+            <g transform="translate(175,210)"><g className="r3">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 4 — (60,320) R=26 */}
+            <g transform="translate(60,320)"><g className="r4">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="9.4" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 5 — (160,415) R=18 */}
+            <g transform="translate(160,415)"><g className="r5">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 6 — (20,510) R=22 */}
+            <g transform="translate(20,510)"><g className="r6">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="8.2" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 7 — (170,600) R=14 */}
+            <g transform="translate(170,600)"><g className="r7">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 8 — (50,700) R=26 */}
+            <g transform="translate(50,700)"><g className="r8">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="9.4" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 9 — (155,785) R=18 */}
+            <g transform="translate(155,785)"><g className="r9">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 10 — (65,870) R=22 */}
+            <g transform="translate(65,870)"><g className="r10">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="8.2" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 11 — (80,120) R=14 */}
+            <g transform="translate(80,120)"><g className="r11">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 12 — (185,310) R=18 */}
+            <g transform="translate(185,310)"><g className="r12">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 13 — (35,390) R=14 */}
+            <g transform="translate(35,390)"><g className="r13">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 14 — (125,480) R=22 */}
+            <g transform="translate(125,480)"><g className="r14">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="8.2" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 15 — (90,575) R=18 */}
+            <g transform="translate(90,575)"><g className="r15">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 16 — (195,665) R=14 */}
+            <g transform="translate(195,665)"><g className="r16">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 17 — (115,760) R=18 */}
+            <g transform="translate(115,760)"><g className="r17">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 18 — (30,840) R=14 */}
+            <g transform="translate(30,840)"><g className="r18">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 19 — (195,130) R=18 */}
+            <g transform="translate(195,130)"><g className="r19">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="6.8" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Rose 20 — (195,490) R=14 */}
+            <g transform="translate(195,490)"><g className="r20">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="5.3" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Bouquet cluster A — gap y≈255-275 */}
+            <g transform="translate(148,253)"><g className="r21">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+            <g transform="translate(48,272)"><g className="r22">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Bouquet cluster B — gap y≈348-370 */}
+            <g transform="translate(105,348)"><g className="r23">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+            <g transform="translate(178,368)"><g className="r24">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Bouquet cluster C — gap y≈448-464 */}
+            <g transform="translate(38,448)"><g className="r25">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+            <g transform="translate(132,464)"><g className="r26">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Bouquet cluster D — gap y≈535-552 */}
+            <g transform="translate(192,537)"><g className="r27">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+            <g transform="translate(62,552)"><g className="r28">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+
+            {/* Bouquet cluster E — gap y≈632-650 */}
+            <g transform="translate(48,632)"><g className="r29">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+            <g transform="translate(148,648)"><g className="r30">
+              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              <circle r="3.5" fill="#B8845A" stroke="none"/>
+            </g></g>
+          </svg>
         </div>
+
+        {/* Right floral decoration — hidden, real flowers in hero photo */}
+        <div className="absolute right-0 top-0 bottom-0 w-[clamp(130px,20vw,280px)] pointer-events-none select-none overflow-hidden" style={{ zIndex: 3, display: 'none' }}>
+          <svg viewBox="0 0 220 900" className="w-full h-full" fill="none" stroke="#9a79b4" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85 }}>
+            <g transform="translate(220,0) scale(-1,1)">
+              <g transform="translate(110,65)"><g className="r1">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-9.5-5.1-12.9-24.5 0-34 C12.9-24.5 9.5-5.1 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-7.5-3.4-10.2-17.7 0-21.1 C10.2-17.7 7.5-3.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="7.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(25,155)"><g className="r2">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(175,210)"><g className="r3">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(60,320)"><g className="r4">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="9.4" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(160,415)"><g className="r5">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(20,510)"><g className="r6">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="8.2" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(170,600)"><g className="r7">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(50,700)"><g className="r8">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="9.4" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(155,785)"><g className="r9">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(65,870)"><g className="r10">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="8.2" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(80,120)"><g className="r11">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(185,310)"><g className="r12">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(35,390)"><g className="r13">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(125,480)"><g className="r14">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="8.2" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(90,575)"><g className="r15">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(195,665)"><g className="r16">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(115,760)"><g className="r17">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(30,840)"><g className="r18">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(195,130)"><g className="r19">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="6.8" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(195,490)"><g className="r20">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="5.3" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(148,253)"><g className="r21">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(48,272)"><g className="r22">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(105,348)"><g className="r23">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(178,368)"><g className="r24">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(38,448)"><g className="r25">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(132,464)"><g className="r26">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(192,537)"><g className="r27">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(62,552)"><g className="r28">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(48,632)"><g className="r29">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+              <g transform="translate(148,648)"><g className="r30">
+                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                <circle r="3.5" fill="#B8845A" stroke="none"/>
+              </g></g>
+            </g>
+          </svg>
+        </div>
+
+        {/* Left aside */}
+        <motion.aside
+          initial={{ opacity: 0, x: -30 }}
+          animate={heroReady ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.9, delay: 0.6 }}
+          className="absolute left-[7%] top-[22%] z-10 hidden lg:block"
+          style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '14px', lineHeight: 1.7, letterSpacing: '4px', color: '#432b50' }}
+        >
+          TWO HEARTS<br/>A SHARED<br/>TOMORROW
+          <div style={{ width: '58px', borderTop: '1px solid #432b5066', marginTop: '20px' }} />
+        </motion.aside>
+
+        {/* Right aside */}
+        <motion.aside
+          initial={{ opacity: 0, x: 30 }}
+          animate={heroReady ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.9, delay: 0.7 }}
+          className="absolute right-[5%] top-[36%] z-10 text-center hidden lg:block"
+          style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '14px', lineHeight: 1.7, letterSpacing: '4px', color: '#432b50' }}
+        >
+          LOVE<br/>CULTURE<br/>FAMILY<br/>FOREVER
+          <div style={{ width: '58px', borderTop: '1px solid #432b5066', marginTop: '20px', margin: '20px auto 0' }} />
+        </motion.aside>
 
         {/* Hero content */}
         <motion.div
           className="relative z-10 text-center px-6 max-w-3xl mx-auto pt-20 md:pt-24"
           style={{ opacity: heroOpacity }}
         >
+          {/* Eyebrow */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={heroReady ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-lavender-400/80 text-[11px] uppercase tracking-[0.48em] font-sans mb-7"
+            className="text-[12px] uppercase font-sans mb-6"
+            style={{ letterSpacing: '6px', color: '#432b50cc' }}
           >
             You are cordially invited to celebrate
           </motion.p>
 
-          {/* Monogram */}
+          {/* Monogram — large serif, deep purple */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 30 }}
+            initial={{ opacity: 0, scale: 0.88, y: 20 }}
             animate={heroReady ? { opacity: 1, scale: 1, y: 0 } : {}}
             transition={{ duration: 1.1, delay: 0.25, ease: [0.21, 0.47, 0.32, 0.98] }}
-            className="font-script leading-none mb-4"
-            style={{
-              fontSize: 'clamp(5rem, 16vw, 13rem)',
-              backgroundImage: 'linear-gradient(135deg, #C9A84C 0%, #e0d080 40%, #f5eba0 50%, #C9A84C 65%, #a8832c 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundSize: '200% auto',
-              animation: 'shimmer 5s linear infinite',
-              filter: 'drop-shadow(0 4px 24px rgba(201,168,76,0.25))',
-            }}
+            style={{ fontFamily: 'Georgia, serif', color: '#7e5a98', letterSpacing: '-18px', lineHeight: 0.78, margin: '0 0 12px', fontSize: 'clamp(5rem, 13vw, 11rem)' }}
           >
-            E &amp; E
+            E<span style={{ fontStyle: 'italic', fontSize: '0.72em', letterSpacing: '-4px' }}>&amp;</span>E
           </motion.div>
 
           {/* Names */}
-          <motion.h1
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={heroReady ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="font-serif text-3xl sm:text-4xl md:text-5xl text-white/95 tracking-[0.12em] mb-1"
+            style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(1.4rem, 3.5vw, 2.4rem)', letterSpacing: '10px', color: '#432b50', margin: '0 0 6px', fontWeight: 'normal' }}
           >
-            Ekow &amp; Ekua
-          </motion.h1>
+            EKOW <i>&amp;</i> EKUA
+          </motion.h2>
 
           {/* Ornament */}
           <motion.div
             initial={{ opacity: 0, scaleX: 0.4 }}
             animate={heroReady ? { opacity: 1, scaleX: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.65 }}
-            className="ornament-line max-w-[220px] mx-auto my-6 text-xs"
-            style={{ color: 'rgba(201,168,76,0.55)' }}
+            style={{ fontSize: '22px', margin: '10px 0', color: '#7e5a98aa' }}
           >
-            ✦
+            ✤
           </motion.div>
 
-          {/* Pill badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
+          {/* Date */}
+          <motion.h3
+            initial={{ opacity: 0, y: 15 }}
             animate={heroReady ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.75 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10"
+            style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', letterSpacing: '9px', color: '#432b50', margin: '8px 0 4px', fontWeight: 'normal' }}
           >
-            {[
-              { icon: Calendar, text: '19 December 2026' },
-              { icon: MapPin,   text: 'Bethany Methodist, Dzorwulu, Accra' },
-            ].map(({ icon: Icon, text }) => (
-              <div
-                key={text}
-                className="flex items-center gap-2 bg-white/8 backdrop-blur-sm border border-white/12 rounded-full px-5 py-2.5 text-lavender-200 text-sm hover:bg-white/12 transition-colors"
-              >
-                <Icon size={13} className="text-gold flex-shrink-0" />
-                <span className="font-sans">{text}</span>
-              </div>
-            ))}
-          </motion.div>
+            17 DECEMBER 2026
+          </motion.h3>
+
+          {/* Place */}
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={heroReady ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.82 }}
+            className="font-sans mb-7"
+            style={{ letterSpacing: '6px', fontSize: '11px', color: '#432b50bb' }}
+          >
+            ACCRA, GHANA
+          </motion.p>
 
           {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={heroReady ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.9 }}
-            className="flex flex-wrap items-center justify-center gap-4"
+            className="flex flex-col items-center gap-3"
           >
             <Link
               href="/rsvp"
-              className="btn-primary group text-sm"
+              className="inline-block rounded-full text-white text-[12px] font-sans tracking-[4px] px-16 py-5 transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(90deg,#9a79b4,#77539a)' }}
             >
-              RSVP Now
-              <ChevronRight size={15} className="ml-1 transition-transform group-hover:translate-x-0.5" />
+              RSVP NOW →
             </Link>
             <Link
               href="/program"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full border border-white/25 text-white/90 text-sm font-sans font-medium tracking-wide hover:bg-white/10 transition-all duration-300 hover:-translate-y-0.5"
+              className="text-[10px] font-sans tracking-[3px] pb-1 transition-opacity hover:opacity-70"
+              style={{ color: '#432b50', borderBottom: '1px solid #432b5055' }}
             >
-              View Program
+              VIEW WEDDING DETAILS
             </Link>
           </motion.div>
         </motion.div>
@@ -388,9 +832,9 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 30 }}
           animate={heroReady ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.9, delay: 1.1 }}
-          className="relative z-10 w-full px-4 mt-14 pb-12"
+          className="relative z-10 w-full px-4 mt-10 pb-12"
         >
-          <p className="text-center text-lavender-400/55 text-[10px] uppercase tracking-[0.38em] mb-5 font-sans">
+          <p className="text-center text-[10px] uppercase font-sans mb-5" style={{ letterSpacing: '4px', color: '#432b5077' }}>
             Counting down to the big day
           </p>
           <Countdown />
@@ -399,12 +843,12 @@ export default function HomePage() {
         {/* Scroll indicator */}
         <div className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none">
           <div className="relative w-7 h-7">
-            <span className="absolute inset-0 rounded-full border border-lavender-400/35 animate-pulse-ring" />
+            <span className="absolute inset-0 rounded-full border animate-pulse-ring" style={{ borderColor: '#7e5a9855' }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <ArrowDown size={13} className="text-lavender-400 animate-bounce" />
+              <ArrowDown size={13} className="animate-bounce" style={{ color: '#7e5a98' }} />
             </div>
           </div>
-          <span className="text-lavender-500/50 text-[9px] uppercase tracking-[0.3em] font-sans">Scroll</span>
+          <span className="text-[9px] uppercase tracking-[0.3em] font-sans" style={{ color: '#432b5077' }}>Scroll</span>
         </div>
       </section>
 
@@ -413,7 +857,7 @@ export default function HomePage() {
       ════════════════════════════════════════════════ */}
       <div
         className="marquee-wrap overflow-hidden border-y py-3.5"
-        style={{ background: '#1a0820', borderColor: 'rgba(201,168,76,0.2)' }}
+        style={{ background: '#f1e8f1', borderColor: '#7e5a9830' }}
         aria-hidden="true"
       >
         <div className="marquee-track">
@@ -421,7 +865,7 @@ export default function HomePage() {
             <span
               key={i}
               className="inline-block px-7 font-sans text-xs tracking-[0.3em] uppercase select-none"
-              style={{ color: '#C9A84C' }}
+              style={{ color: '#7e5a98' }}
             >
               {item}
             </span>
@@ -608,7 +1052,7 @@ export default function HomePage() {
                   <p className="font-serif text-xl text-earth-800 font-semibold mb-2">Wednesday, 17 December 2026</p>
                   <div className="flex items-center gap-1.5 text-earth-500 text-sm md:justify-end">
                     <MapPin size={14} />
-                    <span>Kasoa, Central Region, Ghana</span>
+                    <span>Ghana</span>
                   </div>
                 </div>
                 <div className="relative z-10 flex-shrink-0 order-1 md:order-2">
@@ -655,7 +1099,7 @@ export default function HomePage() {
                   <p className="font-serif text-xl text-earth-800 font-semibold mb-2">Friday, 19 December 2026</p>
                   <div className="flex items-center gap-1.5 text-earth-500 text-sm">
                     <MapPin size={14} />
-                    <span>Bethany Methodist Church, Dzorwulu, Accra</span>
+                    <span>Accra, Ghana</span>
                   </div>
                 </div>
               </div>
@@ -730,7 +1174,7 @@ export default function HomePage() {
                     className="font-script"
                     style={{
                       fontSize: '3.5rem',
-                      backgroundImage: 'linear-gradient(135deg, #C9A84C, #e0d080, #C9A84C)',
+                      backgroundImage: 'linear-gradient(135deg, #C8956C, #e0d080, #C8956C)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundSize: '200% auto',
@@ -747,7 +1191,7 @@ export default function HomePage() {
               </div>
 
               <h3 className="font-serif text-2xl text-white mb-1">Ekow</h3>
-              <p className="font-sans text-xs uppercase tracking-[0.3em] mb-4" style={{ color: '#C9A84C' }}>
+              <p className="font-sans text-xs uppercase tracking-[0.3em] mb-4" style={{ color: '#C8956C' }}>
                 The Groom
               </p>
               <div className="w-16 h-px mx-auto mb-4" style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent)' }} />
@@ -783,7 +1227,7 @@ export default function HomePage() {
                     className="font-script"
                     style={{
                       fontSize: '3.5rem',
-                      backgroundImage: 'linear-gradient(135deg, #C9A84C, #e0d080, #C9A84C)',
+                      backgroundImage: 'linear-gradient(135deg, #C8956C, #e0d080, #C8956C)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundSize: '200% auto',
@@ -800,7 +1244,7 @@ export default function HomePage() {
               </div>
 
               <h3 className="font-serif text-2xl text-white mb-1">Ekua</h3>
-              <p className="font-sans text-xs uppercase tracking-[0.3em] mb-4" style={{ color: '#C9A84C' }}>
+              <p className="font-sans text-xs uppercase tracking-[0.3em] mb-4" style={{ color: '#C8956C' }}>
                 The Bride
               </p>
               <div className="w-16 h-px mx-auto mb-4" style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.5), transparent)' }} />
@@ -825,7 +1269,7 @@ export default function HomePage() {
           >
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="h-px flex-1 max-w-[80px]" style={{ background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.35))' }} />
-              <Heart size={18} className="fill-current" style={{ color: '#C9A84C' }} />
+              <Heart size={18} className="fill-current" style={{ color: '#C8956C' }} />
               <div className="h-px flex-1 max-w-[80px]" style={{ background: 'linear-gradient(to left, transparent, rgba(201,168,76,0.35))' }} />
             </div>
             <p className="font-serif italic text-xl" style={{ color: 'rgba(204,160,204,0.75)' }}>
@@ -939,11 +1383,11 @@ export default function HomePage() {
                 {/* Caption */}
                 <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-1 group-hover:translate-y-0 transition-transform duration-400">
                   <p className="font-script text-2xl text-white leading-tight">{photo.caption}</p>
-                  <div className="w-8 h-px mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ background: '#C9A84C' }} />
+                  <div className="w-8 h-px mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ background: '#C8956C' }} />
                 </div>
                 {/* Gold corner accent */}
                 <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-5 h-5 border-t-2 border-l-2 rounded-tl-sm" style={{ borderColor: '#C9A84C' }} />
+                  <div className="w-5 h-5 border-t-2 border-l-2 rounded-tl-sm" style={{ borderColor: '#C8956C' }} />
                 </div>
               </div>
             ))}
@@ -1092,7 +1536,7 @@ export default function HomePage() {
             <span className="hidden sm:block text-earth-300">·</span>
             <div className="flex items-center gap-2">
               <MapPin size={14} className="text-gold" />
-              <span>Bethany Methodist Church, Dzorwulu, Accra</span>
+              <span>Accra, Ghana</span>
             </div>
           </div>
         </div>
