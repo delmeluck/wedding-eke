@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Save, LayoutDashboard, Users, Phone, CreditCard, Palette, Eye, EyeOff, ChevronRight } from 'lucide-react'
+import { Save, LayoutDashboard, Users, Phone, CreditCard, Palette, Eye, EyeOff, ChevronRight, ShieldCheck, ShieldOff } from 'lucide-react'
 import { useToast } from '@/app/toaster'
 
 /* ─── Tab definitions ───────────────────────────────────────── */
 const TABS = [
-  { id: 'hero',     label: 'Hero & Story',    icon: <LayoutDashboard size={15} /> },
-  { id: 'contact',  label: 'Contact',          icon: <Phone size={15} /> },
-  { id: 'payments', label: 'Payment Details',  icon: <CreditCard size={15} /> },
-  { id: 'layout',   label: 'Layout & Sections', icon: <Palette size={15} /> },
+  { id: 'hero',      label: 'Hero & Story',    icon: <LayoutDashboard size={15} /> },
+  { id: 'contact',   label: 'Contact',          icon: <Phone size={15} /> },
+  { id: 'payments',  label: 'Payment Details',  icon: <CreditCard size={15} /> },
+  { id: 'stream',    label: 'Live Stream',       icon: <Eye size={15} /> },
+  { id: 'rsvp',      label: 'RSVP Settings',    icon: <ShieldCheck size={15} /> },
+  { id: 'layout',    label: 'Layout & Sections', icon: <Palette size={15} /> },
 ]
 
 /* ─── Field groups per tab ──────────────────────────────────── */
@@ -51,6 +53,12 @@ const FIELDS: Record<string, { key: string; label: string; type: string; placeho
     { key: 'gifts_donation_link',  label: 'External Donation Link',      type: 'url',  placeholder: 'https://…', wide: true,
       hint: 'Optional: link to a Paystack, Flutterwave, or other payment page' },
   ],
+  stream: [
+    { key: 'stream_url',   label: 'YouTube Live Stream URL', type: 'url',  placeholder: 'https://www.youtube.com/watch?v=...', wide: true,
+      hint: 'Paste the YouTube watch URL or live stream link. Leave blank to hide the stream section.' },
+    { key: 'stream_title', label: 'Stream Title (optional)', type: 'text', placeholder: 'Watch Our Wedding Live 💒',
+      hint: 'Shown above the stream player. Defaults to "Watch Live" if left blank.' },
+  ],
   layout: [],  // handled separately below
 }
 
@@ -77,10 +85,30 @@ export default function ContentPage() {
     const res = await fetch('/api/content')
     if (res.ok) {
       const data: Record<string, string> = await res.json()
-      // Default section toggles to 'true' if not set
-      const defaults: Record<string, string> = {}
-      SECTIONS.forEach(s => { if (!(s.key in data)) defaults[s.key] = 'true' })
-      setValues({ ...defaults, ...data })
+      // Fill defaults for any fields not yet saved to DB
+      const defaults: Record<string, string> = {
+        // Section toggles
+        ...Object.fromEntries(SECTIONS.map(s => [s.key, 'true'])),
+        // Content defaults matching site hardcoded values
+        groom_name:        'Ekow',
+        bride_name:        'Ekua',
+        wedding_date:      'Friday, 19 December 2026',
+        engagement_date:   'Wednesday, 17 December 2026',
+        rsvp_deadline:     '1 November 2026',
+        venue_wedding:     'Bethany Methodist Church, Dzorwulu, Accra',
+        venue_engagement:  'Ghana',
+        dress_code_note:   'Smart Formal · African Formal · Embrace the palette',
+        hero_tagline:      'Two hearts, one journey',
+        hero_subtitle:     'Join us as we begin forever',
+        brand_couple_initials: 'E & E',
+        brand_year:        '2026',
+      }
+      // DB values override defaults
+      const merged = { ...defaults, ...data }
+      setValues(merged)
+      // Mark dirty if any defaults were applied (not yet persisted)
+      const hasUnpersisted = Object.keys(defaults).some(k => !(k in data))
+      if (hasUnpersisted) setDirty(true)
     }
   }, [])
 
@@ -136,6 +164,69 @@ export default function ContentPage() {
           </button>
         ))}
       </div>
+
+      {/* ── RSVP Settings ───────────────────────────── */}
+      {activeTab === 'rsvp' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-50">
+              <h2 className="font-semibold text-gray-700">RSVP Access Mode</h2>
+              <p className="text-xs text-gray-400 mt-1">
+                Control whether guests must be on the pre-imported invitee list to RSVP.
+              </p>
+            </div>
+            {(() => {
+              const isOpen = values['rsvp_open_mode'] !== 'false'
+              return (
+                <div className="p-5 space-y-5">
+                  {/* Toggle */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isOpen ? 'bg-green-100' : 'bg-amber-50'}`}>
+                        {isOpen
+                          ? <ShieldOff size={16} className="text-green-600" />
+                          : <ShieldCheck size={16} className="text-amber-600" />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700">
+                          {isOpen ? 'Open Mode — Anyone can RSVP' : 'Strict Mode — Invitation required'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed max-w-sm">
+                          {isOpen
+                            ? 'Guests not on your list can still RSVP using their email. Their responses are tagged as "self-registered" so you can distinguish them from pre-imported invitees.'
+                            : 'Only guests whose email was added to the invitee list via the admin can RSVP. Anyone else will see an "invitation not found" message.'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onChange('rsvp_open_mode', isOpen ? 'false' : 'true')}
+                      className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${isOpen ? 'bg-green-500' : 'bg-gray-200'}`}
+                    >
+                      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isOpen ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+
+                  {/* Info box */}
+                  <div className={`rounded-xl px-4 py-3 text-xs leading-relaxed space-y-1 ${isOpen ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-800'}`}>
+                    {isOpen ? (
+                      <>
+                        <p className="font-semibold">✓ Open Mode is active</p>
+                        <p>Guests who can&apos;t find their email can still RSVP. The admin invitee list will show them tagged as <em>self-registered</em>.</p>
+                        <p>Switch to Strict Mode when you&apos;re confident your invitee list is complete — usually 1–2 weeks before the event.</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold">🔒 Strict Mode is active</p>
+                        <p>Only pre-imported invitees can RSVP. Guests not on the list will see an &quot;invitation not found&quot; message and a link to contact you.</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* ── Layout section toggles ───────────────────── */}
       {activeTab === 'layout' && (

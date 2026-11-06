@@ -1,13 +1,17 @@
-import Link from 'next/link'
+export const dynamic = 'force-dynamic'
 
-const PALETTE = [
-  { name: 'Royal Purple',  hex: '#6B21A8', light: false },
-  { name: 'Lavender',      hex: '#C4B5FD', light: true  },
-  { name: 'Gold',          hex: '#C9A84C', light: false },
-  { name: 'Ivory / Cream', hex: '#FEF7ED', light: true, border: true },
-  { name: 'Earth Brown',   hex: '#92400E', light: false },
-  { name: 'Sage Green',    hex: '#86A790', light: false },
-]
+import Link from 'next/link'
+import { PaletteDisplay } from '@/components/PaletteDisplay'
+import { prisma } from '@/lib/prisma'
+
+async function getDressCodeNote(): Promise<string | null> {
+  try {
+    const row = await prisma.siteContent.findUnique({ where: { key: 'dress_code_note' } })
+    return row?.value ?? null
+  } catch {
+    return null
+  }
+}
 
 const GUIDES = [
   {
@@ -15,11 +19,9 @@ const GUIDES = [
     emoji: '👗',
     tag: 'She',
     items: [
-      { icon: '✦', text: 'Elegant gowns or cocktail dresses in wedding palette colours' },
-      { icon: '✦', text: 'Fascinator or headpieces warmly encouraged' },
-      { icon: '✦', text: 'Heels or elegant flats — your comfort matters' },
-      { icon: '✦', text: 'Kente, Ankara, or Kaba & Slit in palette colours celebrated' },
-      { icon: '⚠', text: 'Please avoid white, ivory or any shade that may resemble bridal attire', warn: true },
+      { icon: '✦', text: 'Elegant Outfits in palette colors are celebrated (white wedding)' },
+      { icon: '✦', text: 'Kente, African print is celebrated' },
+      { icon: '✦', text: 'Heels or flats' },
     ],
   },
   {
@@ -27,15 +29,15 @@ const GUIDES = [
     emoji: '🤵',
     tag: 'He',
     items: [
-      { icon: '✦', text: 'Formal suit or African formal wear (Kente, Ankara warmly welcomed)' },
-      { icon: '✦', text: 'Traditional attire in palette colours is highly appreciated' },
-      { icon: '✦', text: 'Smart shoes — no trainers please' },
-      { icon: '✦', text: 'Pocket square or tie in wedding colours adds a lovely touch' },
+      { icon: '✦', text: 'Formal suit/Traditional cloth/kaftan' },
+      { icon: '✦', text: 'Pocket square or tie' },
+      { icon: '✦', text: 'Smart shoes' },
     ],
   },
 ]
 
-export default function DressCodePage() {
+export default async function DressCodePage() {
+  const dressCodeNote = await getDressCodeNote()
   return (
     <>
       {/* ── Page Hero ──────────────────────────────────── */}
@@ -51,41 +53,34 @@ export default function DressCodePage() {
           <h1 className="font-script text-6xl md:text-7xl text-gold mb-3 drop-shadow-lg">Dress Code</h1>
           <div className="ornament-line max-w-40 mx-auto text-gold/40 text-xs mb-5">✦</div>
           <p className="text-lavender-200/70 font-sans text-sm">
-            Smart Formal · African Formal · Embrace the palette
+            {dressCodeNote ?? 'Smart Formal · African Formal · Embrace the palette'}
           </p>
         </div>
       </section>
 
       {/* ── Colour Palette ─────────────────────────────── */}
-      <section className="bg-soft-gradient py-20 px-4">
-        <div className="max-w-3xl mx-auto">
+      <section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #F5F3FF 0%, #FFF4E1 100%)' }}>
+        <div className="max-w-4xl mx-auto">
+
+          {/* Header */}
           <div className="text-center mb-12">
-            <p className="text-lavender-500/80 text-xs uppercase tracking-[0.4em] font-sans mb-3 text-purple-400">
-              Our colours
+            <p className="text-xs uppercase tracking-[0.5em] font-sans mb-3" style={{ color: '#8F5DAF' }}>
+              Our Colours
             </p>
-            <h2 className="font-serif text-3xl md:text-4xl text-purple-900">Wedding Colour Palette</h2>
-            <p className="text-earth-500 font-sans text-sm mt-3 max-w-sm mx-auto">
+            <h2 className="font-serif text-3xl md:text-4xl" style={{ color: '#432b50' }}>Wedding Colour Palette</h2>
+            {/* Gold divider */}
+            <div className="flex items-center justify-center gap-4 my-4">
+              <div className="h-px flex-1 max-w-28" style={{ background: '#C9A227' }} />
+              <span className="font-script text-2xl" style={{ color: '#C9A227' }}>Ekow &amp; Ekua</span>
+              <div className="h-px flex-1 max-w-28" style={{ background: '#C9A227' }} />
+            </div>
+            <p className="font-sans text-sm mt-2 max-w-sm mx-auto" style={{ color: '#8F5DAF', opacity: 0.75 }}>
               We invite you to dress in shades from this palette to make our day even more beautiful
             </p>
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-            {PALETTE.map(c => (
-              <div key={c.name} className="group cursor-default">
-                <div
-                  className={`w-full aspect-square rounded-2xl mb-3 shadow-lg transition-transform
-                               duration-300 group-hover:-translate-y-1 group-hover:shadow-xl
-                               ${c.border ? 'border-2 border-lavender-200' : ''}`}
-                  style={{ backgroundColor: c.hex }}
-                />
-                <p className={`text-xs text-center font-sans leading-tight
-                               ${c.name === 'Ivory / Cream' ? 'text-earth-500' : 'text-earth-600'}`}>
-                  {c.name}
-                </p>
-                <p className="text-[10px] text-center text-earth-400 font-mono mt-0.5">{c.hex}</p>
-              </div>
-            ))}
-          </div>
+          <PaletteDisplay />
+
         </div>
       </section>
 

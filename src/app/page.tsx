@@ -170,11 +170,27 @@ export default function HomePage() {
     fetch('/api/content').then(r => r.json()).then(setSiteContent).catch(() => {})
   }, [])
 
-  const showMosaic  = siteContent['section_show_mosaic']  !== 'false'
-  const showCouple  = siteContent['section_show_couple']  !== 'false'
-  const showGallery = siteContent['section_show_gallery'] !== 'false'
-  const showMarquee = siteContent['section_show_marquee'] !== 'false'
-  const storyText   = siteContent['story_text'] ?? null
+  /* Section visibility */
+  const showMosaic   = siteContent['section_show_mosaic']   !== 'false'
+  const showCouple   = siteContent['section_show_couple']   !== 'false'
+  const showGallery  = siteContent['section_show_gallery']  !== 'false'
+  const showMarquee  = siteContent['section_show_marquee']  !== 'false'
+  const showSaveDate = siteContent['section_show_savedate'] !== 'false'
+  const showBento    = siteContent['section_show_bento']    !== 'false'
+  const showRsvpCta  = siteContent['section_show_rsvp_cta'] !== 'false'
+
+  /* Content fields with hardcoded fallbacks */
+  const groomName      = siteContent['groom_name']      || 'Ekow'
+  const brideName      = siteContent['bride_name']      || 'Ekua'
+  const weddingDate    = siteContent['wedding_date']    || 'Friday, 19 December 2026'
+  const engagementDate = siteContent['engagement_date'] || 'Wednesday, 17 December 2026'
+  const venueWedding   = siteContent['venue_wedding']   || 'Accra, Ghana'
+  const venueEngagement = siteContent['venue_engagement'] || 'Ghana'
+  const rsvpDeadline   = siteContent['rsvp_deadline']   || '1 November 2026'
+  const storyText      = siteContent['story_text']      || null
+  const heroTagline    = siteContent['hero_tagline']    || null
+  const heroSubtitle   = siteContent['hero_subtitle']   || null
+  const dressCodeNote  = siteContent['dress_code_note'] || null
 
   /* Parallax hero */
   const heroRef = useRef<HTMLElement>(null)
@@ -757,7 +773,7 @@ export default function HomePage() {
             transition={{ duration: 0.7, delay: 0.75 }}
             style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', letterSpacing: '9px', color: '#432b50', margin: '8px 0 4px', fontWeight: 'normal' }}
           >
-            17 DECEMBER 2026
+            {engagementDate.replace('Wednesday, ', '').replace('Thursday, ', '').toUpperCase()}
           </motion.h3>
 
           {/* Place */}
@@ -768,7 +784,7 @@ export default function HomePage() {
             className="font-sans mb-7"
             style={{ letterSpacing: '6px', fontSize: '11px', color: '#432b50bb' }}
           >
-            ACCRA, GHANA
+            {venueWedding.toUpperCase()}
           </motion.p>
 
           {/* CTAs */}
@@ -954,7 +970,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════
           SAVE THE DATE  — timeline (existing)
       ════════════════════════════════════════════════ */}
-      <section className="relative py-28 px-4 overflow-hidden" style={{ background: 'linear-gradient(180deg, #f5f3ff 0%, #fef7ed 100%)' }}>
+      {showSaveDate && <section className="relative py-28 px-4 overflow-hidden" style={{ background: 'linear-gradient(180deg, #f5f3ff 0%, #fef7ed 100%)' }}>
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
           <span className="font-script text-[20vw] leading-none font-bold" style={{ color: 'rgba(107,33,168,0.035)' }}>
             E &amp; E
@@ -972,10 +988,10 @@ export default function HomePage() {
               <div className="flex flex-col md:flex-row items-center gap-6 mb-12" data-stagger>
                 <div className="md:w-1/2 md:text-right order-2 md:order-1 reveal-right">
                   <p className="font-script text-3xl text-purple-700 mb-1">Engagement</p>
-                  <p className="font-serif text-xl text-earth-800 font-semibold mb-2">Wednesday, 17 December 2026</p>
+                  <p className="font-serif text-xl text-earth-800 font-semibold mb-2">{engagementDate}</p>
                   <div className="flex items-center gap-1.5 text-earth-500 text-sm md:justify-end">
                     <MapPin size={14} />
-                    <span>Ghana</span>
+                    <span>{venueEngagement}</span>
                   </div>
                 </div>
                 <div className="relative z-10 flex-shrink-0 order-1 md:order-2">
@@ -1019,17 +1035,17 @@ export default function HomePage() {
                 </div>
                 <div className="md:w-1/2 order-2 reveal-left">
                   <p className="font-script text-3xl text-purple-700 mb-1">Wedding</p>
-                  <p className="font-serif text-xl text-earth-800 font-semibold mb-2">Friday, 19 December 2026</p>
+                  <p className="font-serif text-xl text-earth-800 font-semibold mb-2">{weddingDate}</p>
                   <div className="flex items-center gap-1.5 text-earth-500 text-sm">
                     <MapPin size={14} />
-                    <span>Accra, Ghana</span>
+                    <span>{venueWedding}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* ════════════════════════════════════════════════
           MEET THE COUPLE
@@ -1113,7 +1129,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <h3 className="font-serif text-2xl text-white mb-1">Ekow</h3>
+              <h3 className="font-serif text-2xl text-white mb-1">{groomName}</h3>
               <p className="font-sans text-xs uppercase tracking-[0.3em] mb-4" style={{ color: '#C8956C' }}>
                 The Groom
               </p>
@@ -1166,7 +1182,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <h3 className="font-serif text-2xl text-white mb-1">Ekua</h3>
+              <h3 className="font-serif text-2xl text-white mb-1">{brideName}</h3>
               <p className="font-sans text-xs uppercase tracking-[0.3em] mb-4" style={{ color: '#C8956C' }}>
                 The Bride
               </p>
@@ -1333,7 +1349,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════
           WEDDING DETAILS — Bento grid
       ════════════════════════════════════════════════ */}
-      <section
+      {showBento && <section
         ref={bentoSecRef}
         className="py-24 px-4 border-t"
         style={{ background: 'linear-gradient(180deg, #1A1640 0%, #252048 100%)', borderColor: 'rgba(91,78,154,0.5)' }}
@@ -1391,12 +1407,12 @@ export default function HomePage() {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ════════════════════════════════════════════════
           RSVP CTA — dramatic close
       ════════════════════════════════════════════════ */}
-      <section className="relative py-36 px-4 overflow-hidden bg-cream">
+      {showRsvpCta && <section className="relative py-36 px-4 overflow-hidden bg-cream">
         {/* Concentric ring animation */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <div className="w-[700px] h-[700px] rounded-full border border-lavender-200/25 animate-spin-slow opacity-30" />
@@ -1434,7 +1450,7 @@ export default function HomePage() {
           <p className="text-earth-600 font-sans leading-relaxed mb-10 max-w-md mx-auto">
             We would be overjoyed to celebrate this day with you. Please respond
             to your invitation before{' '}
-            <strong className="text-earth-800">1 November 2026</strong>.
+            <strong className="text-earth-800">{rsvpDeadline}</strong>.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
@@ -1451,16 +1467,16 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-earth-500 text-sm">
             <div className="flex items-center gap-2">
               <Calendar size={14} className="text-gold" />
-              <span>19 December 2026</span>
+              <span>{weddingDate.replace('Friday, ', '').replace('Saturday, ', '')}</span>
             </div>
             <span className="hidden sm:block text-earth-300">·</span>
             <div className="flex items-center gap-2">
               <MapPin size={14} className="text-gold" />
-              <span>Accra, Ghana</span>
+              <span>{venueWedding}</span>
             </div>
           </div>
         </div>
-      </section>
+      </section>}
     </>
   )
 }
