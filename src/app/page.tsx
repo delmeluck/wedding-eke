@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import { Countdown } from '@/components/Countdown'
@@ -63,60 +63,6 @@ const MARQUEE_ITEMS = [
   '✦ Ghana',
 ]
 
-/* ── Wedding photos (Unsplash) ─────────────────────────── */
-const MOSAIC_PHOTOS = [
-  {
-    src: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=900&h=1200&fit=crop&auto=format&q=85',
-    alt: 'Wedding couple walking together',
-    caption: 'Together Forever',
-    span: 'row-span-2',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=700&h=500&fit=crop&auto=format&q=85',
-    alt: 'Wedding reception celebration',
-    caption: 'A Grand Celebration',
-    span: '',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&h=500&fit=crop&auto=format&q=85',
-    alt: 'Wedding flower bouquet',
-    caption: 'In Full Bloom',
-    span: '',
-  },
-]
-
-const GALLERY_PHOTOS = [
-  {
-    src: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=600&h=800&fit=crop&auto=format&q=85',
-    alt: 'Couple at golden sunset',
-    caption: 'Our Journey',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&h=800&fit=crop&auto=format&q=85',
-    alt: 'Beautiful wedding ceremony',
-    caption: 'Sacred Union',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=600&h=800&fit=crop&auto=format&q=85',
-    alt: 'Wedding elegance details',
-    caption: 'Pure Elegance',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=800&fit=crop&auto=format&q=85',
-    alt: 'Couple embracing',
-    caption: 'Endless Love',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=800&fit=crop&auto=format&q=85',
-    alt: 'Wedding reception',
-    caption: 'Grand Celebration',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=800&fit=crop&auto=format&q=85',
-    alt: 'Bridal bouquet',
-    caption: 'In Full Bloom',
-  },
-]
 
 /* ── Bento grid ────────────────────────────────────────── */
 const BENTO = [
@@ -218,13 +164,25 @@ export default function HomePage() {
     return () => clearTimeout(t)
   }, [])
 
+  /* Site content from admin */
+  const [siteContent, setSiteContent] = useState<Record<string, string>>({})
+  useEffect(() => {
+    fetch('/api/content').then(r => r.json()).then(setSiteContent).catch(() => {})
+  }, [])
+
+  const showMosaic  = siteContent['section_show_mosaic']  !== 'false'
+  const showCouple  = siteContent['section_show_couple']  !== 'false'
+  const showGallery = siteContent['section_show_gallery'] !== 'false'
+  const showMarquee = siteContent['section_show_marquee'] !== 'false'
+  const storyText   = siteContent['story_text'] ?? null
+
   /* Parallax hero */
   const heroRef = useRef<HTMLElement>(null)
   const { scrollYProgress: heroScroll } = useScroll({
     target: heroRef,
     offset: ['start start', 'end start'],
   })
-  const heroBgY    = useTransform(heroScroll, [0, 1], ['0%', '45%'])
+  const heroBgY     = useTransform(heroScroll, [0, 1], ['0%', '45%'])
   const heroOpacity = useTransform(heroScroll, [0, 0.75], [1, 0])
 
   /* New sections — framer-motion useInView */
@@ -254,11 +212,21 @@ export default function HomePage() {
       <section
         ref={heroRef}
         className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
+        style={{ backgroundColor: 'rgb(255,244,225)' }}
       >
         {/* Hero background */}
         <motion.div style={{ y: heroBgY }} className="absolute inset-0 pointer-events-none">
-          {/* Inpainted photo — all text regions removed, original flowers + arch preserved */}
-          <div className="absolute inset-0" style={{ backgroundImage: 'url(/hero-bg-clean.webp?v=3)', backgroundSize: 'cover', backgroundPosition: 'center top' }} />
+          {/* Inpainted photo — contain on mobile (full image visible), cover on desktop */}
+          <div className="absolute inset-0 overflow-hidden">
+            <Image
+              src="/hero-bg-clean.webp"
+              alt=""
+              fill
+              className="object-contain object-top md:object-cover md:object-[center_top]"
+              priority
+              sizes="100vw"
+            />
+          </div>
           {/* Very light lavender wash to unify palette and boost text legibility */}
           <div className="absolute inset-0" style={{ background: 'rgba(242,232,250,0.28)' }} />
         </motion.div>
@@ -300,7 +268,7 @@ export default function HomePage() {
                 animation:`petalFall ${8+(i%6)*0.9}s ease-in ${p.d}s infinite`}}
               viewBox="-1 -1 2 3.2" fill="none">
               <path d="M0 0 C-0.7-0.5-1.1 0.6 0 2 C1.1 0.6 0.7-0.5 0 0"
-                fill="#9a79b4" fillOpacity="0.65" stroke="#7e5a98" strokeWidth="0.08"
+                fill="#B79AD8" fillOpacity="0.65" stroke="#8F5DAF" strokeWidth="0.08"
                 transform={`rotate(${p.r},0,1)`}/>
             </svg>
           ))}
@@ -308,7 +276,7 @@ export default function HomePage() {
 
         {/* Left floral decoration — hidden, real flowers in hero photo */}
         <div className="absolute left-0 top-0 bottom-0 w-[clamp(130px,20vw,280px)] pointer-events-none select-none overflow-hidden" style={{ zIndex: 3, display: 'none' }}>
-          <svg viewBox="0 0 220 900" className="w-full h-full" fill="none" stroke="#9a79b4" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85 }}>
+          <svg viewBox="0 0 220 900" className="w-full h-full" fill="none" stroke="#B79AD8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85 }}>
             <style>{`
               @keyframes roseBloom {
                 0%   { opacity:0; transform:scale(0) rotate(-20deg); }
@@ -354,201 +322,201 @@ export default function HomePage() {
 
             {/* Rose 1 — (110,65) R=20 */}
             <g transform="translate(110,65)"><g className="r1">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-9.5-5.1-12.9-24.5 0-34 C12.9-24.5 9.5-5.1 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-7.5-3.4-10.2-17.7 0-21.1 C10.2-17.7 7.5-3.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-9.5-5.1-12.9-24.5 0-34 C12.9-24.5 9.5-5.1 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-7.5-3.4-10.2-17.7 0-21.1 C10.2-17.7 7.5-3.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="7.5" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 2 — (25,155) R=18 */}
             <g transform="translate(25,155)"><g className="r2">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 3 — (175,210) R=14 */}
             <g transform="translate(175,210)"><g className="r3">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 4 — (60,320) R=26 */}
             <g transform="translate(60,320)"><g className="r4">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="9.4" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 5 — (160,415) R=18 */}
             <g transform="translate(160,415)"><g className="r5">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 6 — (20,510) R=22 */}
             <g transform="translate(20,510)"><g className="r6">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
               <circle r="8.2" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 7 — (170,600) R=14 */}
             <g transform="translate(170,600)"><g className="r7">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 8 — (50,700) R=26 */}
             <g transform="translate(50,700)"><g className="r8">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="9.4" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 9 — (155,785) R=18 */}
             <g transform="translate(155,785)"><g className="r9">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 10 — (65,870) R=22 */}
             <g transform="translate(65,870)"><g className="r10">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
               <circle r="8.2" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 11 — (80,120) R=14 */}
             <g transform="translate(80,120)"><g className="r11">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 12 — (185,310) R=18 */}
             <g transform="translate(185,310)"><g className="r12">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 13 — (35,390) R=14 */}
             <g transform="translate(35,390)"><g className="r13">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 14 — (125,480) R=22 */}
             <g transform="translate(125,480)"><g className="r14">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
               <circle r="8.2" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 15 — (90,575) R=18 */}
             <g transform="translate(90,575)"><g className="r15">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 16 — (195,665) R=14 */}
             <g transform="translate(195,665)"><g className="r16">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 17 — (115,760) R=18 */}
             <g transform="translate(115,760)"><g className="r17">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 18 — (30,840) R=14 */}
             <g transform="translate(30,840)"><g className="r18">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 19 — (195,130) R=18 */}
             <g transform="translate(195,130)"><g className="r19">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
               <circle r="6.8" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Rose 20 — (195,490) R=14 */}
             <g transform="translate(195,490)"><g className="r20">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
               <circle r="5.3" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Bouquet cluster A — gap y≈255-275 */}
             <g transform="translate(148,253)"><g className="r21">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
             <g transform="translate(48,272)"><g className="r22">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Bouquet cluster B — gap y≈348-370 */}
             <g transform="translate(105,348)"><g className="r23">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
             <g transform="translate(178,368)"><g className="r24">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Bouquet cluster C — gap y≈448-464 */}
             <g transform="translate(38,448)"><g className="r25">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
             <g transform="translate(132,464)"><g className="r26">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Bouquet cluster D — gap y≈535-552 */}
             <g transform="translate(192,537)"><g className="r27">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
             <g transform="translate(62,552)"><g className="r28">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
 
             {/* Bouquet cluster E — gap y≈632-650 */}
             <g transform="translate(48,632)"><g className="r29">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
             <g transform="translate(148,648)"><g className="r30">
-              {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-              {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+              {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+              {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
               <circle r="3.5" fill="#B8845A" stroke="none"/>
             </g></g>
           </svg>
@@ -556,156 +524,156 @@ export default function HomePage() {
 
         {/* Right floral decoration — hidden, real flowers in hero photo */}
         <div className="absolute right-0 top-0 bottom-0 w-[clamp(130px,20vw,280px)] pointer-events-none select-none overflow-hidden" style={{ zIndex: 3, display: 'none' }}>
-          <svg viewBox="0 0 220 900" className="w-full h-full" fill="none" stroke="#9a79b4" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85 }}>
+          <svg viewBox="0 0 220 900" className="w-full h-full" fill="none" stroke="#B79AD8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{ opacity: 0.85 }}>
             <g transform="translate(220,0) scale(-1,1)">
               <g transform="translate(110,65)"><g className="r1">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-9.5-5.1-12.9-24.5 0-34 C12.9-24.5 9.5-5.1 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-7.5-3.4-10.2-17.7 0-21.1 C10.2-17.7 7.5-3.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-9.5-5.1-12.9-24.5 0-34 C12.9-24.5 9.5-5.1 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-7.5-3.4-10.2-17.7 0-21.1 C10.2-17.7 7.5-3.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="7.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(25,155)"><g className="r2">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(175,210)"><g className="r3">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(60,320)"><g className="r4">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="9.4" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(160,415)"><g className="r5">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(20,510)"><g className="r6">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="8.2" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(170,600)"><g className="r7">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(50,700)"><g className="r8">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.8" d="M0 0 C-12.4-6.6-16.8-31.8 0-44.2 C16.8-31.8 12.4-6.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-9.7-4.4-13.3-23 0-27.4 C13.3-23 9.7-4.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="9.4" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(155,785)"><g className="r9">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(65,870)"><g className="r10">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="8.2" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(80,120)"><g className="r11">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(185,310)"><g className="r12">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(35,390)"><g className="r13">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(125,480)"><g className="r14">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-10.5-5.6-14.3-26.9 0-37.4 C14.3-26.9 10.5-5.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-8.2-3.7-11.2-19.5 0-23.1 C11.2-19.5 8.2-3.7 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="8.2" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(90,575)"><g className="r15">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(195,665)"><g className="r16">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(115,760)"><g className="r17">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(30,840)"><g className="r18">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(195,130)"><g className="r19">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.7" d="M0 0 C-8.5-4.6-11.6-22.1 0-30.6 C11.6-22.1 8.5-4.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-6.8-3.1-9.2-16 0-19 C9.2-16 6.8-3.1 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="6.8" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(195,490)"><g className="r20">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.65" stroke="#9a79b4" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.8" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.65" stroke="#B79AD8" strokeWidth="0.6" d="M0 0 C-6.6-3.6-9-17.2 0-23.8 C9-17.2 6.6-3.6 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.8" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-5.3-2.4-7.1-12.4 0-14.8 C7.1-12.4 5.3-2.4 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="5.3" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(148,253)"><g className="r21">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(48,272)"><g className="r22">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(105,348)"><g className="r23">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(178,368)"><g className="r24">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(38,448)"><g className="r25">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(132,464)"><g className="r26">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(192,537)"><g className="r27">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(62,552)"><g className="r28">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(48,632)"><g className="r29">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
               <g transform="translate(148,648)"><g className="r30">
-                {[0,72,144,216,288].map(a=><path key={a} fill="#9a79b4" fillOpacity="0.7" stroke="#9a79b4" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
-                {[36,108,180,252,324].map(a=><path key={a} fill="#c3a8d8" fillOpacity="0.85" stroke="#9a79b4" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
+                {[0,72,144,216,288].map(a=><path key={a} fill="#B79AD8" fillOpacity="0.7" stroke="#B79AD8" strokeWidth="0.5" d="M0 0 C-4.5-2.4-6-11.5 0-16 C6-11.5 4.5-2.4 0 0" transform={`rotate(${a})`}/>)}
+                {[36,108,180,252,324].map(a=><path key={a} fill="#C8A2C8" fillOpacity="0.85" stroke="#B79AD8" strokeWidth="0.4" d="M0 0 C-3.5-1.6-4.8-8.3 0-9.9 C4.8-8.3 3.5-1.6 0 0" transform={`rotate(${a})`}/>)}
                 <circle r="3.5" fill="#B8845A" stroke="none"/>
               </g></g>
             </g>
@@ -757,7 +725,7 @@ export default function HomePage() {
             initial={{ opacity: 0, scale: 0.88, y: 20 }}
             animate={heroReady ? { opacity: 1, scale: 1, y: 0 } : {}}
             transition={{ duration: 1.1, delay: 0.25, ease: [0.21, 0.47, 0.32, 0.98] }}
-            style={{ fontFamily: 'Georgia, serif', color: '#7e5a98', letterSpacing: '-18px', lineHeight: 0.78, margin: '0 0 12px', fontSize: 'clamp(5rem, 13vw, 11rem)' }}
+            style={{ fontFamily: 'Georgia, serif', color: '#8F5DAF', letterSpacing: '-18px', lineHeight: 0.78, margin: '0 0 12px', fontSize: 'clamp(5rem, 13vw, 11rem)' }}
           >
             E<span style={{ fontStyle: 'italic', fontSize: '0.72em', letterSpacing: '-4px' }}>&amp;</span>E
           </motion.div>
@@ -777,7 +745,7 @@ export default function HomePage() {
             initial={{ opacity: 0, scaleX: 0.4 }}
             animate={heroReady ? { opacity: 1, scaleX: 1 } : {}}
             transition={{ duration: 0.8, delay: 0.65 }}
-            style={{ fontSize: '22px', margin: '10px 0', color: '#7e5a98aa' }}
+            style={{ fontSize: '22px', margin: '10px 0', color: '#8F5DAFaa' }}
           >
             ✤
           </motion.div>
@@ -813,7 +781,7 @@ export default function HomePage() {
             <Link
               href="/rsvp"
               className="inline-block rounded-full text-white text-[12px] font-sans tracking-[4px] px-16 py-5 transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(90deg,#9a79b4,#77539a)' }}
+              style={{ background: 'linear-gradient(90deg,#B79AD8,#77539a)' }}
             >
               RSVP NOW →
             </Link>
@@ -843,21 +811,21 @@ export default function HomePage() {
         {/* Scroll indicator */}
         <div className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none">
           <div className="relative w-7 h-7">
-            <span className="absolute inset-0 rounded-full border animate-pulse-ring" style={{ borderColor: '#7e5a9855' }} />
+            <span className="absolute inset-0 rounded-full border animate-pulse-ring" style={{ borderColor: '#8F5DAF55' }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <ArrowDown size={13} className="animate-bounce" style={{ color: '#7e5a98' }} />
+              <ArrowDown size={13} className="animate-bounce" style={{ color: '#8F5DAF' }} />
             </div>
           </div>
-          <span className="text-[9px] uppercase tracking-[0.3em] font-sans" style={{ color: '#432b5077' }}>Scroll</span>
+          <span className="text-[9px] uppercase tracking-[0.3em] font-sans" style={{ color: '#432b5077' }}>Scroll to Explore</span>
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════
           GOLD MARQUEE BAND
       ════════════════════════════════════════════════ */}
-      <div
+      {showMarquee && <div
         className="marquee-wrap overflow-hidden border-y py-3.5"
-        style={{ background: '#f1e8f1', borderColor: '#7e5a9830' }}
+        style={{ background: '#f1e8f1', borderColor: '#8F5DAF30' }}
         aria-hidden="true"
       >
         <div className="marquee-track">
@@ -865,18 +833,18 @@ export default function HomePage() {
             <span
               key={i}
               className="inline-block px-7 font-sans text-xs tracking-[0.3em] uppercase select-none"
-              style={{ color: '#7e5a98' }}
+              style={{ color: '#8F5DAF' }}
             >
               {item}
             </span>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* ════════════════════════════════════════════════
           PHOTO MOSAIC  — "A Wedding in the Making"
       ════════════════════════════════════════════════ */}
-      <section
+      {showMosaic && <section
         ref={mosaicRef}
         className="relative py-24 px-4 overflow-hidden"
         style={{ background: 'linear-gradient(180deg, #f8f4ff 0%, #fef7ed 100%)' }}
@@ -911,93 +879,48 @@ export default function HomePage() {
             </motion.p>
           </motion.div>
 
-          {/* Photo grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4" style={{ gridTemplateRows: '280px 280px' }}>
-            {/* Left tall — spans 2 rows */}
-            <motion.div
-              className="img-zoom relative rounded-2xl overflow-hidden row-span-2 shadow-xl shadow-purple-900/15 group cursor-pointer"
-              variants={fadeLeft}
-              initial="hidden"
-              animate={mosaicInView ? 'visible' : 'hidden'}
-              transition={{ delay: 0.1 }}
+          {/* Photo grid — coming soon */}
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4"
+            style={{ gridTemplateRows: '280px 280px' }}
+            variants={fadeUp}
+            initial="hidden"
+            animate={mosaicInView ? 'visible' : 'hidden'}
+            transition={{ delay: 0.1 }}
+          >
+            {/* Left tall */}
+            <div
+              className="rounded-2xl row-span-2 border-2 border-dashed flex flex-col items-center justify-center gap-4"
+              style={{ borderColor: 'rgba(183,154,216,0.3)', background: 'rgba(183,154,216,0.06)' }}
             >
-              <Image
-                src={MOSAIC_PHOTOS[0].src}
-                alt={MOSAIC_PHOTOS[0].alt}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/75 via-purple-950/10 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-white font-serif text-xl leading-tight">{MOSAIC_PHOTOS[0].caption}</p>
-                <p className="text-lavender-300/70 font-sans text-xs mt-1 uppercase tracking-wider">Ekow &amp; Ekua</p>
-              </div>
-            </motion.div>
-
+              <p className="font-script text-5xl" style={{ color: '#C9A227' }}>E &amp; E</p>
+              <p className="text-xs uppercase tracking-[0.4em] text-center font-sans leading-relaxed" style={{ color: '#8F5DAF' }}>
+                Our Photos<br />Coming Soon
+              </p>
+              <div className="text-3xl opacity-40">📸</div>
+            </div>
             {/* Top right */}
-            <motion.div
-              className="img-zoom relative rounded-2xl overflow-hidden shadow-lg shadow-purple-900/10 group cursor-pointer"
-              variants={fadeUp}
-              initial="hidden"
-              animate={mosaicInView ? 'visible' : 'hidden'}
-              transition={{ delay: 0.25 }}
+            <div
+              className="rounded-2xl border-2 border-dashed flex items-center justify-center"
+              style={{ borderColor: 'rgba(183,154,216,0.25)', background: 'rgba(183,154,216,0.04)' }}
             >
-              <Image
-                src={MOSAIC_PHOTOS[1].src}
-                alt={MOSAIC_PHOTOS[1].alt}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/60 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <p className="text-white font-serif text-base">{MOSAIC_PHOTOS[1].caption}</p>
-              </div>
-            </motion.div>
-
+              <div className="text-4xl opacity-25">✦</div>
+            </div>
             {/* Bottom right */}
-            <motion.div
-              className="img-zoom relative rounded-2xl overflow-hidden shadow-lg shadow-purple-900/10 group cursor-pointer"
-              variants={fadeUp}
-              initial="hidden"
-              animate={mosaicInView ? 'visible' : 'hidden'}
-              transition={{ delay: 0.4 }}
+            <div
+              className="rounded-2xl border-2 border-dashed flex items-center justify-center"
+              style={{ borderColor: 'rgba(183,154,216,0.25)', background: 'rgba(183,154,216,0.04)' }}
             >
-              <Image
-                src={MOSAIC_PHOTOS[2].src}
-                alt={MOSAIC_PHOTOS[2].alt}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/60 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <p className="text-white font-serif text-base">{MOSAIC_PHOTOS[2].caption}</p>
-              </div>
-            </motion.div>
-
-            {/* Hidden 4th cell on mobile / extra on desktop */}
-            <motion.div
-              className="hidden md:block img-zoom relative rounded-2xl overflow-hidden shadow-lg shadow-purple-900/10 group cursor-pointer"
-              variants={scaleIn}
-              initial="hidden"
-              animate={mosaicInView ? 'visible' : 'hidden'}
-              transition={{ delay: 0.55 }}
+              <div className="text-4xl opacity-25">✦</div>
+            </div>
+            {/* 4th cell desktop */}
+            <div
+              className="hidden md:flex rounded-2xl border-2 border-dashed items-center justify-center"
+              style={{ borderColor: 'rgba(183,154,216,0.25)', background: 'rgba(183,154,216,0.04)' }}
             >
-              <Image
-                src={GALLERY_PHOTOS[0].src}
-                alt={GALLERY_PHOTOS[0].alt}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-purple-950/60 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <p className="text-white font-serif text-base">{GALLERY_PHOTOS[0].caption}</p>
-              </div>
-            </motion.div>
-          </div>
+              <div className="text-4xl opacity-25">✦</div>
+            </div>
+          </motion.div>
 
           {/* Stat chips */}
           <motion.div
@@ -1026,7 +949,7 @@ export default function HomePage() {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ════════════════════════════════════════════════
           SAVE THE DATE  — timeline (existing)
@@ -1111,7 +1034,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════
           MEET THE COUPLE
       ════════════════════════════════════════════════ */}
-      <section
+      {showCouple && <section
         ref={coupleRef}
         className="relative py-28 px-4 overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #1A1640 0%, #252048 50%, #110E38 100%)' }}
@@ -1277,7 +1200,7 @@ export default function HomePage() {
             </p>
           </motion.div>
         </div>
-      </section>
+      </section>}
 
       {/* ════════════════════════════════════════════════
           OUR STORY — dramatic quote
@@ -1312,9 +1235,7 @@ export default function HomePage() {
             </motion.p>
 
             <motion.p variants={fadeUp} className="font-sans leading-relaxed text-base max-w-xl mx-auto mb-10" style={{ color: '#9e779e' }}>
-              Ekow and Ekua invite you to witness their union — a celebration of love,
-              faith, and family. Together with their families, they joyfully request
-              the honour of your presence on their special day.
+              {storyText ?? 'Ekow and Ekua invite you to witness their union — a celebration of love, faith, and family. Together with their families, they joyfully request the honour of your presence on their special day.'}
             </motion.p>
 
             <motion.div variants={fadeUp}>
@@ -1333,7 +1254,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════════════════
           GALLERY PREVIEW STRIP
       ════════════════════════════════════════════════ */}
-      <section
+      {showGallery && <section
         ref={galleryRef}
         className="py-24 overflow-hidden"
         style={{ background: 'linear-gradient(180deg, #fef7ed 0%, #f5f0ff 100%)' }}
@@ -1356,7 +1277,7 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
 
-        {/* Horizontal scroll strip */}
+        {/* Coming soon — placeholder strip */}
         <motion.div
           variants={fadeUp}
           initial="hidden"
@@ -1364,31 +1285,30 @@ export default function HomePage() {
           transition={{ delay: 0.25 }}
           className="px-4 md:px-8"
         >
-          <div className="gallery-strip">
-            {GALLERY_PHOTOS.map((photo, i) => (
+          <div className="flex items-center justify-center gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
+            {[0, 1, 2, 3].map(i => (
               <div
                 key={i}
-                className="gallery-strip-item img-zoom relative rounded-2xl overflow-hidden shadow-lg shadow-purple-900/15 group cursor-pointer"
-                style={{ width: 260, height: 360 }}
+                className="flex-shrink-0 rounded-2xl flex flex-col items-center justify-center gap-3 border-2 border-dashed"
+                style={{
+                  width: 260, height: 360,
+                  borderColor: 'rgba(183,154,216,0.35)',
+                  background: 'linear-gradient(160deg, rgba(183,154,216,0.08) 0%, rgba(201,162,39,0.05) 100%)',
+                }}
               >
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-108"
-                  sizes="260px"
-                />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-950/80 via-purple-950/10 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
-                {/* Caption */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-1 group-hover:translate-y-0 transition-transform duration-400">
-                  <p className="font-script text-2xl text-white leading-tight">{photo.caption}</p>
-                  <div className="w-8 h-px mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300" style={{ background: '#C8956C' }} />
-                </div>
-                {/* Gold corner accent */}
-                <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-5 h-5 border-t-2 border-l-2 rounded-tl-sm" style={{ borderColor: '#C8956C' }} />
-                </div>
+                {i === 1 ? (
+                  <>
+                    <p className="font-script text-4xl" style={{ color: '#C9A227' }}>E &amp; E</p>
+                    <p className="text-xs uppercase tracking-[0.4em] font-sans text-center px-4" style={{ color: '#8F5DAF' }}>
+                      Photos<br />Coming Soon
+                    </p>
+                    <div className="text-2xl opacity-60">📷</div>
+                  </>
+                ) : (
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center border border-dashed" style={{ borderColor: 'rgba(183,154,216,0.4)', color: 'rgba(143,93,175,0.3)' }}>
+                    ✦
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1408,7 +1328,7 @@ export default function HomePage() {
             <ChevronRight size={15} className="ml-1 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </motion.div>
-      </section>
+      </section>}
 
       {/* ════════════════════════════════════════════════
           WEDDING DETAILS — Bento grid
