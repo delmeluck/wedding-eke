@@ -776,17 +776,6 @@ export default function HomePage() {
             {engagementDate.replace('Wednesday, ', '').replace('Thursday, ', '').toUpperCase()}
           </motion.h3>
 
-          {/* Place */}
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={heroReady ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.82 }}
-            className="font-sans mb-7"
-            style={{ letterSpacing: '6px', fontSize: '11px', color: '#432b50bb' }}
-          >
-            ACCRA, GHANA
-          </motion.p>
-
           {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
