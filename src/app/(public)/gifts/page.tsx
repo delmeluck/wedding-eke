@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { Gift as GiftIcon, Heart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { GiftsClient, GiftMomoInfo, BankGiftCTA } from './GiftsClient'
+import { GiftsClient, GiftMomoInfo, BankGiftInfo } from './GiftsClient'
 
 async function getGifts() {
   try {
@@ -36,13 +36,25 @@ function toMomoInfo(g: Awaited<ReturnType<typeof getGifts>>[0]): GiftMomoInfo {
   }
 }
 
+function toBankInfo(g: Awaited<ReturnType<typeof getGifts>>[0]): BankGiftInfo {
+  return {
+    id:          g.id,
+    name:        g.name,
+    price:       g.price       ?? undefined,
+    bankName:    g.bankName    ?? undefined,
+    bankAccount: g.bankAccount ?? undefined,
+    bankBranch:  g.bankBranch  ?? undefined,
+    accountName: g.momoName    ?? undefined,
+  }
+}
+
 export default async function GiftsPage() {
   const gifts = await getGifts()
 
-  // Gifts that have any MoMo number → feed into the cash-gift section drawer
   const momoGifts    = gifts.filter(g => isMomo(g.giftType) || hasMomoNumbers(g))
-  // Physical / bank / momo gifts → shown in the registry grid (bank always; momo only when no separate momo-type gift)
-  const registryGifts = gifts.filter(g => !isMomo(g.giftType) && g.giftType !== 'token')
+  const bankGifts    = gifts.filter(g => g.giftType === 'bank')
+  // Registry: physical gifts only — no momo, no bank, no token
+  const registryGifts = gifts.filter(g => !isMomo(g.giftType) && g.giftType !== 'token' && g.giftType !== 'bank')
 
   const hasMomo = momoGifts.length > 0
 
@@ -67,7 +79,7 @@ export default async function GiftsPage() {
         </div>
       </section>
 
-      {/* ── Mobile Money Section ────────────────────────── */}
+      {/* ── Cash Gift Section (MoMo + Bank Transfer) ───── */}
       <section className="bg-purple-950 py-16 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
@@ -76,12 +88,14 @@ export default async function GiftsPage() {
             </p>
             <h2 className="font-serif text-3xl md:text-4xl text-white mb-3">Send a Cash Gift</h2>
             <p className="text-lavender-300/70 font-sans text-sm leading-relaxed max-w-md mx-auto">
-              Send via MTN MoMo, Telecel Cash, or AirtelTigo Money.
-              Choose your network, enter your number, and confirm on your phone.
+              Send instantly via mobile money or bank transfer — whichever works best for you.
             </p>
           </div>
 
-          <GiftsClient momoGifts={momoGifts.map(toMomoInfo)} />
+          <GiftsClient
+            momoGifts={momoGifts.map(toMomoInfo)}
+            bankGifts={bankGifts.map(toBankInfo)}
+          />
         </div>
       </section>
 
@@ -136,19 +150,8 @@ export default async function GiftsPage() {
                       </div>
                     )}
 
-                    {/* Bank transfer CTA */}
-                    {gift.giftType === 'bank' && (
-                      <BankGiftCTA
-                        giftName={gift.name}
-                        bankName={gift.bankName ?? undefined}
-                        bankAccount={gift.bankAccount ?? undefined}
-                        bankBranch={gift.bankBranch ?? undefined}
-                        accountName={gift.momoName ?? undefined}
-                      />
-                    )}
-
-                    {/* Inline MoMo button for non-bank gifts with momoNumbers */}
-                    {gift.giftType !== 'bank' && hasMomoNumbers(gift) && (
+                    {/* Inline MoMo button for registry gifts with momoNumbers */}
+                    {hasMomoNumbers(gift) && (
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <GiftsClient inlineGift={toMomoInfo(gift)} />
                       </div>
@@ -161,8 +164,8 @@ export default async function GiftsPage() {
         </section>
       )}
 
-      {/* ── Empty state (no non-momo gifts at all) ──────── */}
-      {!hasMomo && registryGifts.length === 0 && (
+      {/* ── Empty state ─────────────────────────────────── */}
+      {!hasMomo && bankGifts.length === 0 && registryGifts.length === 0 && (
         <section className="bg-soft-gradient py-32 px-4">
           <div className="max-w-md mx-auto text-center">
             <div className="w-24 h-24 rounded-full bg-lavender-100 flex items-center justify-center mx-auto mb-6">
