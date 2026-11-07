@@ -32,23 +32,22 @@ function FlipUnit({ value, label }: { value: number; label: string }) {
       <span
         key={display}
         className="font-serif font-bold tabular-nums leading-none select-none text-[2.6rem] md:text-[3.4rem]"
-        style={{ color: '#7e5a98', animation: 'fadeUp 0.35s ease-out both' }}
+        style={{ color: '#432b50', animation: 'fadeUp 0.35s ease-out both' }}
       >
         {display}
       </span>
-      <p className="text-[10px] md:text-xs font-sans uppercase tracking-[0.22em]" style={{ color: '#432b5099' }}>
+      <p className="text-[10px] md:text-xs font-sans uppercase tracking-[0.22em]" style={{ color: '#432b5088' }}>
         {label}
       </p>
     </div>
   )
 }
 
-/* ── Dot separator between units ────────────────────── */
+/* ── Vertical bar separator between units ────────────── */
 function Separator() {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 pb-8 self-end mb-3">
-      <span className="w-1.5 h-1.5 rounded-full block" style={{ background: '#7e5a9870' }} />
-      <span className="w-1.5 h-1.5 rounded-full block" style={{ background: '#7e5a9870' }} />
+    <div className="self-stretch flex items-center justify-center pb-6">
+      <span className="w-px h-8 block" style={{ background: 'currentColor', opacity: 0.3 }} />
     </div>
   )
 }

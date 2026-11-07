@@ -2,18 +2,23 @@ import nodemailer from 'nodemailer'
 
 /* ─────────────────────────────────────────────────────────
    Email transport
-   Supports two modes (set EMAIL_PROVIDER in .env.local):
+   Supports three modes (set EMAIL_PROVIDER in .env.local):
 
    1. SMTP  (default)  — any SMTP server, Gmail, etc.
       EMAIL_SERVER_HOST / PORT / USER / PASSWORD / FROM
 
-   2. Resend (recommended for Vercel / production)
-      npm install resend
+   2. Resend — resend.com API (requires verified domain)
       RESEND_API_KEY=re_xxxxx
       EMAIL_FROM="E & E Wedding <noreply@yourdomain.com>"
+
+   3. Brevo  — brevo.com HTTP API (recommended for Vercel)
+      No IP whitelist needed — uses REST API directly.
+      BREVO_API_KEY=xsmtpsib-xxxxx
+      EMAIL_FROM="E & E Wedding <af726a001@smtp-brevo.com>"
 ───────────────────────────────────────────────────────── */
 
-const provider = process.env.EMAIL_PROVIDER ?? 'smtp'
+// Default to 'brevo' (HTTP API — no IP restrictions, works from Vercel)
+const provider = process.env.EMAIL_PROVIDER ?? 'brevo'
 
 /* ── SMTP transport (lazy — only validated on first send) */
 function createSMTPTransport() {
@@ -55,7 +60,38 @@ export async function sendEmail({
   const recipients = Array.isArray(to) ? to : [to]
   const plainText = text ?? html.replace(/<[^>]+>/g, '')
 
-  if (provider === 'resend') {
+  if (provider === 'brevo' || process.env.BREVO_API_KEY) {
+    /* ── Brevo HTTP API ────────────────────────────────── */
+    /* No IP whitelist — works from any serverless function */
+    const apiKey = process.env.BREVO_API_KEY
+    if (!apiKey) throw new Error('BREVO_API_KEY is not set')
+
+    // Parse sender name + email from EMAIL_FROM  "Name <addr@example.com>"
+    const fromMatch = from.match(/^(.*?)\s*<(.+?)>$/)
+    const senderName  = fromMatch ? fromMatch[1].trim() : 'E & E Wedding'
+    const senderEmail = fromMatch ? fromMatch[2].trim()
+      : (process.env.EMAIL_SERVER_USER ?? 'af726a001@smtp-brevo.com')
+
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender:      { name: senderName, email: senderEmail },
+        to:          recipients.map(email => ({ email })),
+        subject,
+        htmlContent: html,
+        textContent: plainText,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(`Brevo API error ${res.status}: ${JSON.stringify(err)}`)
+    }
+  } else if (provider === 'resend') {
     /* ── Resend provider ───────────────────────────────── */
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) throw new Error('RESEND_API_KEY is not set in .env.local')
@@ -95,7 +131,18 @@ export async function sendEmail({
 /* ── Verify connection (call from admin / health-check) ── */
 export async function verifyEmailConfig(): Promise<{ ok: boolean; message: string }> {
   try {
-    if (provider === 'resend') {
+    if (provider === 'brevo') {
+      const apiKey = process.env.BREVO_API_KEY
+      if (!apiKey) return { ok: false, message: 'BREVO_API_KEY not set' }
+      // Ping Brevo account info endpoint
+      const res = await fetch('https://api.brevo.com/v3/account', {
+        headers: { 'api-key': apiKey },
+      })
+      const data = await res.json().catch(() => ({}))
+      return res.ok
+        ? { ok: true, message: `Brevo connected — ${(data as {email?: string}).email ?? 'account verified'}` }
+        : { ok: false, message: `Brevo returned ${res.status}: ${JSON.stringify(data)}` }
+    } else if (provider === 'resend') {
       const apiKey = process.env.RESEND_API_KEY
       if (!apiKey) return { ok: false, message: 'RESEND_API_KEY not set' }
       // Quick ping to Resend domains endpoint
@@ -129,13 +176,13 @@ export async function sendMagicLink({
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fff;">
         <div style="text-align:center;margin-bottom:28px;">
-          <h2 style="color:#5B4E9A;font-size:28px;margin:0;">E &amp; E Wedding</h2>
-          <p style="color:#7B6DAF;font-size:13px;margin:4px 0 0;">Admin Portal</p>
+          <h2 style="color:#8F5DAF;font-size:28px;margin:0;">E &amp; E Wedding</h2>
+          <p style="color:#8F5DAF;font-size:13px;margin:4px 0 0;">Admin Portal</p>
         </div>
         <p style="color:#451a03;line-height:1.7;">Click the button below to sign in to the admin dashboard. This link expires in 24 hours.</p>
         <div style="text-align:center;margin:28px 0;">
           <a href="${url}"
-             style="display:inline-block;background:#5B4E9A;color:#fff;text-align:center;
+             style="display:inline-block;background:#8F5DAF;color:#fff;text-align:center;
                     padding:14px 32px;border-radius:50px;text-decoration:none;
                     font-family:sans-serif;font-size:15px;font-weight:600;">
             Sign In to Admin
@@ -185,13 +232,13 @@ export function inviteeEmailTemplate({
 
           <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#252048,#3D3575,#5B4E9A,#4A3D7A);
+            <td style="background:linear-gradient(135deg,#2a1540,#432b50,#8F5DAF,#4A3D7A);
                        padding:52px 40px;text-align:center;">
               <p style="color:#D8BFD8;font-family:sans-serif;font-size:11px;
                         letter-spacing:0.35em;text-transform:uppercase;margin:0 0 12px;">
                 You are cordially invited
               </p>
-              <h1 style="color:#C9A84C;font-family:Georgia,serif;font-size:52px;
+              <h1 style="color:#C9A227;font-family:Georgia,serif;font-size:52px;
                          margin:0;font-style:italic;line-height:1.1;">
                 E &amp; E
               </h1>
@@ -201,7 +248,7 @@ export function inviteeEmailTemplate({
               </p>
               <!-- Gold divider -->
               <div style="margin:20px auto;max-width:160px;height:1px;
-                          background:linear-gradient(90deg,transparent,#C9A84C,transparent);"></div>
+                          background:linear-gradient(90deg,transparent,#C9A227,transparent);"></div>
               <p style="color:#D8BFD8;font-family:sans-serif;font-size:11px;
                         letter-spacing:0.3em;text-transform:uppercase;margin:0;">
                 Wedding Invitation
@@ -214,7 +261,7 @@ export function inviteeEmailTemplate({
             <td style="background:#fef7ed;padding:44px 40px;">
 
               <!-- Dear name -->
-              <p style="font-size:22px;color:#3D3575;text-align:center;margin:0 0 16px;">
+              <p style="font-size:22px;color:#432b50;text-align:center;margin:0 0 16px;">
                 Dear <em>${name}</em>,
               </p>
 
@@ -230,21 +277,33 @@ export function inviteeEmailTemplate({
                             margin:0 0 32px;">
                 <tr>
                   <td style="padding:24px;text-align:center;">
-                    <p style="font-family:sans-serif;font-size:11px;color:#7B6DAF;
+                    <p style="font-family:sans-serif;font-size:11px;color:#8F5DAF;
                                letter-spacing:0.3em;text-transform:uppercase;margin:0 0 8px;">
                       Save the Date
                     </p>
-                    <p style="font-size:22px;color:#252048;margin:0 0 4px;font-weight:bold;">
+                    <p style="font-family:sans-serif;font-size:11px;color:#8F5DAF;
+                               letter-spacing:0.3em;text-transform:uppercase;margin:0 0 4px;">
+                      Engagement · Wednesday
+                    </p>
+                    <p style="font-size:18px;color:#432b50;margin:0 0 12px;font-weight:bold;">
+                      17 December 2026
+                    </p>
+                    <div style="height:1px;background:linear-gradient(90deg,transparent,#C9A227,transparent);margin:0 0 12px;"></div>
+                    <p style="font-family:sans-serif;font-size:11px;color:#8F5DAF;
+                               letter-spacing:0.3em;text-transform:uppercase;margin:0 0 4px;">
+                      Wedding · Friday
+                    </p>
+                    <p style="font-size:22px;color:#2a1540;margin:0 0 4px;font-weight:bold;">
                       ${weddingDate}
                     </p>
-                    <p style="color:#5B4E9A;font-size:15px;margin:0;">
+                    <p style="color:#8F5DAF;font-size:15px;margin:0;">
                       📍 ${venue}
                     </p>
                     ${mapLink ? `
                     <div style="margin-top:14px;">
                       <a href="${mapLink}"
-                         style="display:inline-block;color:#5B4E9A;font-family:sans-serif;
-                                font-size:13px;text-decoration:none;border:1px solid #5B4E9A;
+                         style="display:inline-block;color:#8F5DAF;font-family:sans-serif;
+                                font-size:13px;text-decoration:none;border:1px solid #8F5DAF;
                                 padding:8px 18px;border-radius:50px;">
                         Get Directions →
                       </a>
@@ -257,18 +316,18 @@ export function inviteeEmailTemplate({
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="text-align:center;padding:0 0 8px;">
-                    <p style="font-family:sans-serif;font-size:13px;color:#5B4E9A;
+                    <p style="font-family:sans-serif;font-size:13px;color:#8F5DAF;
                                font-weight:600;margin:0 0 4px;">
                       Your Personal QR Code
                     </p>
-                    <p style="font-family:sans-serif;font-size:12px;color:#7B6DAF;
+                    <p style="font-family:sans-serif;font-size:12px;color:#8F5DAF;
                                margin:0 0 16px;">
                       Present this at the venue for check-in
                     </p>
                     <img src="${qrCodeDataUrl}"
                          alt="Your QR Code for check-in"
                          width="180" height="180"
-                         style="border:3px solid #5B4E9A;border-radius:12px;
+                         style="border:3px solid #8F5DAF;border-radius:12px;
                                 display:block;margin:0 auto;" />
                   </td>
                 </tr>
@@ -278,7 +337,7 @@ export function inviteeEmailTemplate({
               ${rsvpLink ? `
               <div style="text-align:center;margin:32px 0 0;">
                 <a href="${rsvpLink}"
-                   style="display:inline-block;background:#5B4E9A;color:#fff;
+                   style="display:inline-block;background:#8F5DAF;color:#fff;
                           font-family:sans-serif;font-size:15px;font-weight:600;
                           text-decoration:none;padding:14px 36px;border-radius:50px;">
                   Confirm Attendance →
@@ -292,16 +351,16 @@ export function inviteeEmailTemplate({
 
           <!-- Footer -->
           <tr>
-            <td style="background:#252048;padding:28px 40px;text-align:center;">
+            <td style="background:#2a1540;padding:28px 40px;text-align:center;">
               <p style="color:#D8BFD8;font-family:Georgia,serif;font-style:italic;
                         font-size:15px;margin:0 0 6px;">
                 With love &amp; joy,
               </p>
-              <p style="color:#C9A84C;font-family:Georgia,serif;font-size:18px;
+              <p style="color:#C9A227;font-family:Georgia,serif;font-size:18px;
                         font-style:italic;margin:0;">
                 Ekow &amp; Ekua
               </p>
-              <p style="color:#7B6DAF;font-family:sans-serif;font-size:11px;
+              <p style="color:#8F5DAF;font-family:sans-serif;font-size:11px;
                         margin:12px 0 0;">
                 19 December 2026 · Bethany Methodist Church, Dzorwulu, Accra
               </p>

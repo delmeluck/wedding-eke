@@ -4,11 +4,14 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   Plus, Trash2, Edit2, X, Check, Gift, Banknote, Smartphone,
   Building2, Ticket, Copy, Send, ChevronDown, ChevronUp, Eye, EyeOff,
+  RefreshCw, CheckCircle2, Clock, AlertCircle,
 } from 'lucide-react'
 import { useToast } from '@/app/toaster'
 
 /* ─── types ─────────────────────────────────────────────────── */
-type GiftType = 'physical' | 'momo_mtn' | 'momo_vodafone' | 'momo_airtel' | 'bank' | 'token'
+type GiftType = 'physical' | 'momo' | 'momo_mtn' | 'momo_vodafone' | 'momo_airtel' | 'bank' | 'token'
+
+function isMomoType(t: string) { return t === 'momo' || t.startsWith('momo_') }
 
 interface Gift {
   id: string
@@ -18,8 +21,11 @@ interface Gift {
   imageUrl?: string
   category?: string
   giftType: GiftType
-  momoNumber?: string
   momoName?: string
+  momoNumber?: string            // legacy
+  momoMtnNumber?: string
+  momoTelecelNumber?: string
+  momoAirtelNumber?: string
   bankName?: string
   bankAccount?: string
   bankBranch?: string
@@ -40,21 +46,43 @@ interface Coupon {
   claimedAt?: string
 }
 
+interface MomoPayment {
+  id:          string
+  giftId?:     string
+  gift?:       { name: string }
+  donorName?:  string
+  donorPhone:  string
+  network:     string
+  amount:      number
+  reference:   string
+  status:      string
+  displayText?: string
+  note?:       string
+  confirmedAt?: string
+  createdAt:   string
+}
+
 /* ─── config ─────────────────────────────────────────────────── */
 const GIFT_TYPES: { value: GiftType; label: string; icon: React.ReactNode; color: string }[] = [
-  { value: 'physical',      label: 'Physical Gift',    icon: <Gift size={16} />,        color: 'text-purple-600 bg-purple-50 border-purple-200' },
-  { value: 'momo_mtn',     label: 'MTN MoMo',         icon: <Smartphone size={16} />,  color: 'text-yellow-700 bg-yellow-50 border-yellow-200' },
-  { value: 'momo_vodafone',label: 'Vodafone Cash',     icon: <Smartphone size={16} />,  color: 'text-red-600 bg-red-50 border-red-200' },
-  { value: 'momo_airtel',  label: 'AirtelTigo Money',  icon: <Smartphone size={16} />,  color: 'text-blue-600 bg-blue-50 border-blue-200' },
-  { value: 'bank',         label: 'Bank Transfer',     icon: <Building2 size={16} />,   color: 'text-green-700 bg-green-50 border-green-200' },
-  { value: 'token',        label: 'Gift Token/Coupon', icon: <Ticket size={16} />,      color: 'text-gold bg-yellow-50 border-yellow-300' },
+  { value: 'physical', label: 'Physical Gift',    icon: <Gift size={16} />,       color: 'text-purple-600 bg-purple-50 border-purple-200' },
+  { value: 'momo',     label: 'Mobile Money',     icon: <Smartphone size={16} />, color: 'text-yellow-700 bg-yellow-50 border-yellow-300' },
+  { value: 'bank',     label: 'Bank Transfer',    icon: <Building2 size={16} />,  color: 'text-green-700 bg-green-50 border-green-200' },
+  { value: 'token',    label: 'Gift Token/Coupon',icon: <Ticket size={16} />,     color: 'text-gold bg-yellow-50 border-yellow-300' },
 ]
+
+const MOMO_NETWORKS = [
+  { id: 'Mtn',     label: 'MTN MoMo',    icon: '🔶', field: 'momoMtnNumber',     placeholder: '024 000 0000', color: 'border-yellow-300 bg-yellow-50' },
+  { id: 'Telecel', label: 'Telecel Cash', icon: '🔴', field: 'momoTelecelNumber', placeholder: '020 000 0000', color: 'border-red-200 bg-red-50' },
+  { id: 'Airtel',  label: 'AirtelTigo',  icon: '🔵', field: 'momoAirtelNumber',  placeholder: '027 000 0000', color: 'border-blue-200 bg-blue-50' },
+] as const
 
 const GHANA_BANKS = ['GCB Bank', 'Ecobank Ghana', 'Fidelity Bank', 'Stanbic Bank', 'Zenith Bank', 'Access Bank', 'Absa Ghana', 'First National Bank', 'CAL Bank', 'UBA Ghana']
 
 const empty = (): Partial<Gift> => ({
   name: '', description: '', price: undefined, imageUrl: '',
-  category: '', giftType: 'physical', momoNumber: '', momoName: '',
+  category: '', giftType: 'physical',
+  momoName: '', momoNumber: '',
+  momoMtnNumber: '', momoTelecelNumber: '', momoAirtelNumber: '',
   bankName: '', bankAccount: '', bankBranch: '', priority: 0, claimed: false,
 })
 
@@ -74,7 +102,9 @@ export default function GiftsPage() {
   const [sendEmail,    setSendEmail]    = useState('')
   const [sendName,     setSendName]     = useState('')
   const [showDetails,  setShowDetails]  = useState<Set<string>>(new Set())
-  const [activeTab,    setActiveTab]    = useState<'all' | GiftType>('all')
+  const [activeTab,    setActiveTab]    = useState<'all' | GiftType | 'payments'>('all')
+  const [payments,     setPayments]     = useState<MomoPayment[]>([])
+  const [loadingPay,   setLoadingPay]   = useState(false)
   const { toast } = useToast()
 
   const load = useCallback(async () => {
@@ -82,7 +112,15 @@ export default function GiftsPage() {
     if (res.ok) setGifts(await res.json())
   }, [])
 
+  const loadPayments = useCallback(async () => {
+    setLoadingPay(true)
+    const res = await fetch('/api/gifts/momo')
+    if (res.ok) setPayments(await res.json())
+    setLoadingPay(false)
+  }, [])
+
   useEffect(() => { load() }, [load])
+  useEffect(() => { if (activeTab === 'payments') loadPayments() }, [activeTab, loadPayments])
 
   async function loadCoupons(giftId: string) {
     const res = await fetch(`/api/gifts/coupons`)
@@ -170,9 +208,14 @@ export default function GiftsPage() {
     toast({ title: 'Copied!', type: 'success' })
   }
 
-  const giftTypeInfo = (t: GiftType) => GIFT_TYPES.find(x => x.value === t) ?? GIFT_TYPES[0]
+  const giftTypeInfo = (t: GiftType) =>
+    GIFT_TYPES.find(x => x.value === t)
+    ?? (isMomoType(t) ? GIFT_TYPES.find(x => x.value === 'momo') : undefined)
+    ?? GIFT_TYPES[0]
 
-  const filtered = activeTab === 'all' ? gifts : gifts.filter(g => g.giftType === activeTab)
+  const filtered = activeTab === 'all' ? gifts
+    : activeTab === 'momo' ? gifts.filter(g => isMomoType(g.giftType))
+    : gifts.filter(g => g.giftType === activeTab)
   const claimed  = gifts.filter(g => g.claimed).length
   const total    = gifts.length
 
@@ -213,7 +256,9 @@ export default function GiftsPage() {
           All ({total})
         </button>
         {GIFT_TYPES.map(t => {
-          const count = gifts.filter(g => g.giftType === t.value).length
+          const count = t.value === 'momo'
+            ? gifts.filter(g => isMomoType(g.giftType)).length
+            : gifts.filter(g => g.giftType === t.value).length
           if (count === 0) return null
           return (
             <button key={t.value} onClick={() => setActiveTab(t.value)}
@@ -224,14 +269,111 @@ export default function GiftsPage() {
             </button>
           )
         })}
+        {/* Payments tab */}
+        <button onClick={() => setActiveTab('payments')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+            activeTab === 'payments'
+              ? 'bg-green-600 text-white border-green-600'
+              : 'bg-green-50 text-green-700 border-green-200 hover:opacity-80'
+          }`}>
+          💸 MoMo Payments
+        </button>
       </div>
 
+      {/* ── Payments tab ──────────────────────────────── */}
+      {activeTab === 'payments' && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="font-semibold text-gray-700">Mobile Money Payments</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {payments.filter(p => p.status === 'success').length} confirmed ·
+                {' '}{payments.filter(p => p.status === 'pending').length} pending ·
+                GH₵ {payments.filter(p => p.status === 'success').reduce((s, p) => s + p.amount, 0).toLocaleString()} received
+              </p>
+            </div>
+            <button onClick={loadPayments} disabled={loadingPay}
+              className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700
+                         bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors">
+              <RefreshCw size={13} className={loadingPay ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+          </div>
+
+          {payments.length === 0 ? (
+            <div className="text-center py-16 text-gray-300">
+              <Smartphone size={36} className="mx-auto mb-3 opacity-40" />
+              <p className="text-gray-400 text-sm">No payments yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {payments.map(p => (
+                <div key={p.id}
+                  className={`rounded-xl border p-4 flex items-start gap-4 ${
+                    p.status === 'success' ? 'bg-green-50 border-green-100' :
+                    p.status === 'failed'  ? 'bg-red-50 border-red-100' :
+                    'bg-white border-gray-100'
+                  }`}>
+                  {/* Status icon */}
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    p.status === 'success' ? 'bg-green-100 text-green-600' :
+                    p.status === 'failed'  ? 'bg-red-100 text-red-400' :
+                    'bg-gray-100 text-gray-400'
+                  }`}>
+                    {p.status === 'success' ? <CheckCircle2 size={18} /> :
+                     p.status === 'failed'  ? <AlertCircle  size={18} /> :
+                     <Clock size={18} />}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">
+                          {p.donorName ?? 'Anonymous'} · {p.donorPhone}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {p.network === 'mtn' ? '🔶 MTN MoMo' :
+                           p.network === 'telecel' ? '🔴 Telecel Cash' :
+                           '🔵 AirtelTigo'} ·{' '}
+                          {p.gift?.name ?? 'General gift'} ·{' '}
+                          <span className="font-mono">{p.reference}</span>
+                        </p>
+                        {p.note && (
+                          <p className="text-xs text-gray-400 italic mt-0.5">"{p.note}"</p>
+                        )}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-bold text-base" style={{ color: '#C9A84C' }}>
+                          GH₵ {p.amount.toLocaleString()}
+                        </p>
+                        <p className={`text-xs font-medium mt-0.5 ${
+                          p.status === 'success' ? 'text-green-600' :
+                          p.status === 'failed'  ? 'text-red-400' :
+                          'text-gray-400'}`}>
+                          {p.status}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-gray-300 mt-1.5">
+                      {new Date(p.createdAt).toLocaleString()}
+                      {p.confirmedAt && ` · Confirmed ${new Date(p.confirmedAt).toLocaleString()}`}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Gift cards ────────────────────────────────── */}
+      {activeTab !== 'payments' && (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map(g => {
           const tInfo = giftTypeInfo(g.giftType)
           const isToken = g.giftType === 'token'
-          const isMomo  = g.giftType.startsWith('momo_')
+          const isMomo  = isMomoType(g.giftType)
           const isBank  = g.giftType === 'bank'
           const open    = expanded.has(g.id)
           const showDet = showDetails.has(g.id)
@@ -290,22 +432,26 @@ export default function GiftsPage() {
                     {showDet ? 'Hide' : 'Show'} payment details
                   </button>
                   {showDet && (
-                    <div className="mt-2 bg-gray-50 rounded-lg p-3 space-y-1.5 text-xs">
+                    <div className="mt-2 bg-gray-50 rounded-lg p-3 space-y-2 text-xs">
                       {isMomo && (
                         <>
-                          {g.momoName    && <Detail label="Name"   value={g.momoName}    onCopy={() => copy(g.momoName!)} />}
-                          {g.momoNumber  && <Detail label="Number" value={g.momoNumber}  onCopy={() => copy(g.momoNumber!)} />}
-                          <p className="text-gray-400 pt-1">
-                            Send via {g.giftType === 'momo_mtn' ? 'MTN MoMo' : g.giftType === 'momo_vodafone' ? 'Vodafone Cash' : 'AirtelTigo Money'}
-                          </p>
+                          {g.momoName && <Detail label="Acct Name" value={g.momoName} onCopy={() => copy(g.momoName!)} />}
+                          {/* Multi-network numbers */}
+                          {g.momoMtnNumber     && <Detail label="🔶 MTN"     value={g.momoMtnNumber}     onCopy={() => copy(g.momoMtnNumber!)} />}
+                          {g.momoTelecelNumber && <Detail label="🔴 Telecel"  value={g.momoTelecelNumber} onCopy={() => copy(g.momoTelecelNumber!)} />}
+                          {g.momoAirtelNumber  && <Detail label="🔵 AirtelTigo" value={g.momoAirtelNumber}  onCopy={() => copy(g.momoAirtelNumber!)} />}
+                          {/* Legacy single number */}
+                          {g.momoNumber && !g.momoMtnNumber && !g.momoTelecelNumber && !g.momoAirtelNumber && (
+                            <Detail label="Number" value={g.momoNumber} onCopy={() => copy(g.momoNumber!)} />
+                          )}
                         </>
                       )}
                       {isBank && (
                         <>
-                          {g.bankName    && <Detail label="Bank"    value={g.bankName}    onCopy={() => copy(g.bankName!)} />}
-                          {g.momoName    && <Detail label="Acct Name" value={g.momoName}  onCopy={() => copy(g.momoName!)} />}
+                          {g.bankName    && <Detail label="Bank"      value={g.bankName}    onCopy={() => copy(g.bankName!)} />}
+                          {g.momoName    && <Detail label="Acct Name" value={g.momoName}    onCopy={() => copy(g.momoName!)} />}
                           {g.bankAccount && <Detail label="Acct No."  value={g.bankAccount} onCopy={() => copy(g.bankAccount!)} />}
-                          {g.bankBranch  && <Detail label="Branch"   value={g.bankBranch}  onCopy={() => copy(g.bankBranch!)} />}
+                          {g.bankBranch  && <Detail label="Branch"    value={g.bankBranch}  onCopy={() => copy(g.bankBranch!)} />}
                         </>
                       )}
                     </div>
@@ -367,6 +513,7 @@ export default function GiftsPage() {
           </div>
         )}
       </div>
+      )} {/* end activeTab !== 'payments' */}
 
       {/* ── Add/Edit modal ────────────────────────────── */}
       {showForm && (
@@ -415,20 +562,33 @@ export default function GiftsPage() {
                 </div>
               </div>
 
-              {/* MoMo fields */}
-              {(form.giftType === 'momo_mtn' || form.giftType === 'momo_vodafone' || form.giftType === 'momo_airtel') && (
-                <div className={`rounded-xl border-2 p-4 space-y-3 ${giftTypeInfo(form.giftType!).color}`}>
-                  <p className="text-xs font-semibold uppercase tracking-widest">
-                    {form.giftType === 'momo_mtn' ? 'MTN Mobile Money' : form.giftType === 'momo_vodafone' ? 'Vodafone Cash' : 'AirtelTigo Money'} Details
+              {/* MoMo fields — multi-network */}
+              {(form.giftType === 'momo' || isMomoType(form.giftType ?? '')) && (
+                <div className="rounded-xl border-2 border-yellow-200 bg-yellow-50 p-4 space-y-4">
+                  <p className="text-xs font-semibold text-yellow-800 uppercase tracking-widest">
+                    Mobile Money Networks
                   </p>
                   <div>
-                    <label className="label">Account Name</label>
+                    <label className="label">Account Name (shown to guests)</label>
                     <input value={form.momoName ?? ''} onChange={e => setForm(p => ({ ...p, momoName: e.target.value }))} className="input-field" placeholder="Ekow Mensah" />
                   </div>
-                  <div>
-                    <label className="label">MoMo Number</label>
-                    <input value={form.momoNumber ?? ''} onChange={e => setForm(p => ({ ...p, momoNumber: e.target.value }))} className="input-field" placeholder="024 000 0000" />
-                  </div>
+                  <p className="text-xs text-yellow-700 -mt-1">Enter a number for each network you want to accept. Leave blank to hide that network.</p>
+                  {MOMO_NETWORKS.map(net => {
+                    const fieldKey = `momo${net.id}Number` as keyof Gift
+                    return (
+                      <div key={net.id} className={`rounded-lg border p-3 ${net.color}`}>
+                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                          <span>{net.icon}</span> {net.label}
+                        </label>
+                        <input
+                          value={(form[fieldKey] as string) ?? ''}
+                          onChange={e => setForm(p => ({ ...p, [fieldKey]: e.target.value }))}
+                          className="input-field font-mono"
+                          placeholder={`${net.label} number (${net.placeholder})`}
+                        />
+                      </div>
+                    )
+                  })}
                 </div>
               )}
 

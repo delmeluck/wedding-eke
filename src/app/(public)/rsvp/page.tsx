@@ -35,6 +35,7 @@ function RSVPForm() {
   const [searchEmail, setSearchEmail] = useState('')
   const [invitee,     setInvitee]     = useState<Invitee | null>(null)
   const [notFound,    setNotFound]    = useState(false)
+  const [selfReg,     setSelfReg]     = useState(false)
   const [submitted,   setSubmitted]   = useState(false)
   const [searching,   setSearching]   = useState(false)
 
@@ -78,6 +79,7 @@ function RSVPForm() {
     if (!searchEmail.trim()) return
     setSearching(true)
     setNotFound(false)
+    setSelfReg(false)
     const res = await fetch(`/api/invitees/by-email?email=${encodeURIComponent(searchEmail)}`)
     setSearching(false)
     if (res.ok) {
@@ -85,16 +87,25 @@ function RSVPForm() {
       setInvitee(data)
       setValue('name', data.name)
     } else {
-      setNotFound(true)
+      const json = await res.json().catch(() => ({}))
+      if (json.openMode) {
+        // Open mode: silently allow self-registration — don't reveal they're not on the list
+        setSelfReg(true)
+      } else {
+        setNotFound(true)
+      }
     }
   }
 
   const onSubmit = async (data: FormData) => {
-    if (!invitee) return
+    const body = invitee
+      ? { inviteeId: invitee.id, ...data }
+      : { email: searchEmail, ...data }
+
     const res = await fetch('/api/rsvp', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ inviteeId: invitee.id, ...data }),
+      body:    JSON.stringify(body),
     })
     if (res.ok) {
       setSubmitted(true)
@@ -117,11 +128,22 @@ function RSVPForm() {
               <p className="font-script text-5xl text-purple-700 mb-3">See You There!</p>
               <div className="ornament-line max-w-32 mx-auto text-lavender-300 text-xs mb-6">✦</div>
               <h2 className="font-serif text-2xl text-purple-900 mb-3">You&apos;re on the list!</h2>
-              <p className="text-earth-600 font-sans text-sm leading-relaxed mb-8">
-                We&apos;re so excited to celebrate with you. We&apos;ll see you on
-                <strong className="text-earth-800"> 19 December 2026</strong> at
-                Bethany Methodist Church, Dzorwulu.
+              <p className="text-earth-600 font-sans text-sm leading-relaxed mb-5">
+                We&apos;re so excited to celebrate with you!
               </p>
+              {/* Event date pills */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+                <div className="bg-lavender-50 border border-lavender-200 rounded-2xl px-5 py-3 text-left">
+                  <p className="text-[10px] text-purple-500 uppercase tracking-widest font-sans mb-0.5">Engagement</p>
+                  <p className="font-serif text-purple-900 font-semibold text-sm">17 December 2026</p>
+                  <p className="text-earth-500 text-xs font-sans mt-0.5">Wednesday · Family Ceremony</p>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-2xl px-5 py-3 text-left">
+                  <p className="text-[10px] text-purple-500 uppercase tracking-widest font-sans mb-0.5">Wedding</p>
+                  <p className="font-serif text-purple-900 font-semibold text-sm">19 December 2026</p>
+                  <p className="text-earth-500 text-xs font-sans mt-0.5">Friday · Bethany Methodist, Dzorwulu</p>
+                </div>
+              </div>
             </>
           ) : (
             <>
@@ -217,7 +239,7 @@ function RSVPForm() {
       )}
 
       {/* ── RSVP Form ────────────────────────────── */}
-      {invitee && (
+      {(invitee || selfReg) && (
         <div className="bg-white rounded-3xl border border-lavender-100 shadow-lg overflow-hidden">
           {/* Invitation header */}
           <div className="bg-hero-gradient px-7 py-8 text-center relative overflow-hidden">
@@ -229,9 +251,11 @@ function RSVPForm() {
             </div>
             <div className="relative z-10">
               <p className="text-lavender-400/70 text-xs uppercase tracking-[0.35em] font-sans mb-2">
-                You are invited
+                {invitee ? 'You are invited' : 'Welcome'}
               </p>
-              <p className="font-script text-4xl text-gold mb-1">{invitee.name}</p>
+              <p className="font-script text-4xl text-gold mb-1">
+                {invitee ? invitee.name : 'RSVP'}
+              </p>
               <div className="ornament-line max-w-24 mx-auto text-gold/30 text-[10px] mt-2">✦</div>
             </div>
           </div>
@@ -239,6 +263,20 @@ function RSVPForm() {
           {/* Form body */}
           <div className="p-7">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+              {/* Name field — only for self-registration */}
+              {selfReg && (
+                <div>
+                  <label className="label">Your Full Name <span className="text-red-400">*</span></label>
+                  <input
+                    {...register('name')}
+                    placeholder="Enter your full name"
+                    className="input-field mt-1"
+                  />
+                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                  <p className="text-earth-400 text-xs mt-1">Responding for: {searchEmail}</p>
+                </div>
+              )}
 
               {/* Attending toggle */}
               <div>
@@ -277,7 +315,7 @@ function RSVPForm() {
               </div>
 
               {/* Plus one */}
-              {attending === 'yes' && invitee.plusOne && (
+              {attending === 'yes' && invitee?.plusOne && (
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center
                                    transition-colors duration-200 flex-shrink-0

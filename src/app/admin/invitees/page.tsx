@@ -7,7 +7,7 @@ import { z } from 'zod'
 import {
   Plus, Trash2, QrCode, Edit2, X, Download, ChevronDown, Check,
   Send, Bell, Upload, FileSpreadsheet, AlertCircle, CheckCircle2,
-  Loader2,
+  Loader2, KeyRound,
 } from 'lucide-react'
 import { useToast } from '@/app/toaster'
 
@@ -446,6 +446,7 @@ interface Invitee {
   id: string; name: string; email?: string; phone?: string
   plusOne: boolean; tableNumber?: string; group?: string; qrCode: string
   inviteSentAt?: string | null; reminderSentAt?: string | null
+  confirmationSentAt?: string | null
   rsvp?: { attending: boolean; plusOne: boolean } | null
 }
 
@@ -499,6 +500,20 @@ export default function InviteesPage() {
     if (res.ok) { load(); toast({ title: 'Deleted', type: 'success' }) }
   }
 
+  async function sendAccessCode(inv: Invitee) {
+    if (!inv.email) { toast({ title: 'No email for this invitee', type: 'error' }); return }
+    setSending(inv.id)
+    const res = await fetch(`/api/invitees/${inv.id}/send-code`, { method: 'POST' })
+    setSending(null)
+    if (res.ok) {
+      const d = await res.json()
+      toast({ title: `Access code ${d.code} sent to ${inv.name}`, type: 'success' })
+    } else {
+      const d = await res.json().catch(() => ({}))
+      toast({ title: (d as { error?: string }).error ?? 'Failed to send code', type: 'error' })
+    }
+  }
+
   async function sendInvite(inv: Invitee) {
     if (!inv.email) { toast({ title: 'No email for this invitee', type: 'error' }); return }
     setSending(inv.id)
@@ -512,6 +527,29 @@ export default function InviteesPage() {
       toast({ title: d.sent > 0 ? `Invitation sent to ${inv.name}` : 'Send failed', type: d.sent > 0 ? 'success' : 'error' })
       load()
     } else { toast({ title: 'Failed to send', type: 'error' }) }
+  }
+
+  async function revokeConfirmation(inv: Invitee) {
+    if (!confirm(`Revoke the confirmation email for ${inv.name}? They can receive it again next time they RSVP.`)) return
+    setSending(inv.id)
+    await fetch(`/api/invitees/${inv.id}/revoke-confirmation`, { method: 'DELETE' })
+    setSending(null)
+    toast({ title: `Confirmation revoked for ${inv.name}`, type: 'success' })
+    load()
+  }
+
+  async function resendConfirmation(inv: Invitee) {
+    if (!inv.email) { toast({ title: 'No email for this invitee', type: 'error' }); return }
+    setSending(inv.id)
+    const res = await fetch(`/api/invitees/${inv.id}/revoke-confirmation`, { method: 'POST' })
+    setSending(null)
+    if (res.ok) {
+      toast({ title: `Confirmation resent to ${inv.name}`, type: 'success' })
+      load()
+    } else {
+      const d = await res.json().catch(() => ({}))
+      toast({ title: (d as { error?: string }).error ?? 'Failed to resend', type: 'error' })
+    }
   }
 
   async function showQR(inv: Invitee) {
@@ -581,7 +619,7 @@ export default function InviteesPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">
             <tr>
-              {['Name', 'Email', 'Group / Table', 'RSVP', 'Invite', 'Actions'].map(h => (
+              {['Name', 'Email', 'Group / Table', 'RSVP', 'Invite', 'Confirmation', 'Actions'].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium text-sm">{h}</th>
               ))}
             </tr>
@@ -616,10 +654,44 @@ export default function InviteesPage() {
                   )}
                 </td>
                 <td className="px-4 py-3">
+                  {!inv.email ? (
+                    <span className="text-xs text-gray-300">No email</span>
+                  ) : inv.confirmationSentAt ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Sent</span>
+                      <button onClick={() => resendConfirmation(inv)} disabled={sending === inv.id}
+                        className="p-1 rounded hover:bg-blue-50 text-blue-500" title="Resend confirmation">
+                        {sending === inv.id ? <Loader2 size={10} className="animate-spin" /> : <Send size={10} />}
+                      </button>
+                      <button onClick={() => revokeConfirmation(inv)} disabled={sending === inv.id}
+                        className="p-1 rounded hover:bg-red-50 text-red-400" title="Revoke confirmation">
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ) : inv.rsvp?.attending ? (
+                    <button onClick={() => resendConfirmation(inv)} disabled={sending === inv.id}
+                      className="inline-flex items-center gap-1 text-[11px] px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors disabled:opacity-50">
+                      {sending === inv.id ? <Loader2 size={10} className="animate-spin" /> : <><Send size={10} /> Send</>}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-gray-300">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => showQR(inv)} className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600" title="QR Code">
+                    <button onClick={() => showQR(inv)} className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-600" title="View QR Code">
                       <QrCode size={15} />
                     </button>
+                    {inv.rsvp?.attending && inv.email && (
+                      <button
+                        onClick={() => sendAccessCode(inv)}
+                        disabled={sending === inv.id}
+                        className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600 disabled:opacity-40"
+                        title="Send venue access code to guest"
+                      >
+                        {sending === inv.id ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />}
+                      </button>
+                    )}
                     <button onClick={() => openEdit(inv)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600" title="Edit">
                       <Edit2 size={15} />
                     </button>
@@ -632,7 +704,7 @@ export default function InviteesPage() {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-16 text-center">
+                <td colSpan={7} className="px-4 py-16 text-center">
                   <FileSpreadsheet size={32} className="text-gray-200 mx-auto mb-3" />
                   <p className="text-gray-400 text-sm">No invitees yet</p>
                   <div className="flex items-center justify-center gap-3 mt-4">

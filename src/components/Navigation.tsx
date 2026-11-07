@@ -63,7 +63,7 @@ export function Navigation() {
           <Link
             href="/"
             className="hover:opacity-80 transition-opacity select-none"
-            style={{ fontFamily: 'Georgia, serif', fontSize: '1.875rem', letterSpacing: '-3px', lineHeight: 1, color: '#7e5a98' }}
+            style={{ fontFamily: 'Georgia, serif', fontSize: '1.875rem', letterSpacing: '-3px', lineHeight: 1, color: '#8F5DAF' }}
           >
             E<span style={{ fontStyle: 'italic', fontSize: '0.72em', letterSpacing: '-1px' }}>&amp;</span>E
           </Link>
@@ -77,7 +77,7 @@ export function Navigation() {
                   <Link
                     href={href}
                     className="nav-link px-4 py-2 text-base font-sans font-medium tracking-wide"
-                    style={{ color: '#9a79b4' }}
+                    style={{ color: '#B79AD8' }}
                     data-active={active ? 'true' : undefined}
                   >
                     {label}

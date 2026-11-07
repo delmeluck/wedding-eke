@@ -29,8 +29,8 @@ export function Footer() {
         </div>
 
         <div className="text-earth-500 text-sm space-y-1">
-          <p>📅 Engagement — 17 December 2026 · Kasoa</p>
-          <p>💒 Wedding — 19 December 2026 · Bethany Methodist Church, Dzorwulu, Accra</p>
+          <p>📅 Engagement — 17 December 2026</p>
+          <p>💒 Wedding — 19 December 2026</p>
         </div>
 
         <div className="mt-8 pt-6 border-t border-purple-800 text-purple-600 text-xs">

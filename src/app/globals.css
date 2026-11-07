@@ -9,10 +9,10 @@
   --font-playfair: 'Playfair Display', Georgia, serif;
   --font-great-vibes: 'Great Vibes', cursive;
   --font-lato: 'Lato', system-ui, sans-serif;
-  --gold: #C9A84C;
-  --purple-950: #252048;   /* deep indigo-lavender */
-  --purple-800: #5B4E9A;   /* main amethyst */
-  --lavender-300: #D8BFD8; /* thistle — soft accent on dark */
+  --gold: #C9A227;
+  --purple-950: #2a1540;   /* deep violet */
+  --purple-800: #8F5DAF;   /* main amethyst */
+  --lavender-300: #C8A2C8; /* lilac — soft accent on dark */
 }
 
 /* ─── Base ───────────────────────────────────────────── */
@@ -21,7 +21,7 @@
 
   body {
     font-family: var(--font-lato);
-    background-color: #fef7ed;
+    background-color: #FFF4E1;
     color: #451a03;
     overflow-x: hidden;
   }
@@ -175,7 +175,7 @@
   left: 0;
   right: 0;
   height: 1.5px;
-  background: #9a79b4;
+  background: #B79AD8;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s ease;
@@ -298,7 +298,7 @@
 .petal {
   position: absolute;
   border-radius: 50% 0 50% 0;
-  background: radial-gradient(ellipse at 38% 28%, #f4c0d8, #d890b8 55%, #a060a0);
+  background: radial-gradient(ellipse at 38% 28%, #F4C2C2, #D94F9D 55%, #8F5DAF);
   animation: petalFall var(--dur, 7s) ease-in var(--delay, 0s) infinite;
   opacity: 0;
   pointer-events: none;
@@ -355,7 +355,7 @@
 
 /* ─── Text gradient gold ─────────────────────────────── */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #C9A84C 0%, #e0d080 40%, #C9A84C 70%, #a8832c 100%);
+  background: linear-gradient(135deg, #C9A227 0%, #E6D2A2 40%, #C9A227 70%, #8a6a1a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -366,8 +366,8 @@
 /* ─── Custom scrollbar ───────────────────────────────── */
 ::-webkit-scrollbar        { width: 5px; }
 ::-webkit-scrollbar-track  { background: #F5F3FF; }
-::-webkit-scrollbar-thumb  { background: #C3B1E1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #9B8DC8; }
+::-webkit-scrollbar-thumb  { background: #C8A2C8; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B79AD8; }
 
 /* ─── Utility delays ─────────────────────────────────── */
 .delay-100 { animation-delay: 0.1s; }

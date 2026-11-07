@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 import { Camera, Video, Star } from 'lucide-react'
+import { LiveStreamSection } from '@/components/LiveStream'
 
 async function getMedia() {
   try {
@@ -12,8 +13,20 @@ async function getMedia() {
   }
 }
 
+async function getStreamSettings() {
+  try {
+    const rows = await prisma.siteContent.findMany({
+      where: { key: { in: ['stream_url', 'stream_title'] } },
+    })
+    const map = Object.fromEntries(rows.map(r => [r.key, r.value]))
+    return { url: map.stream_url ?? '', title: map.stream_title ?? '' }
+  } catch {
+    return { url: '', title: '' }
+  }
+}
+
 export default async function GalleryPage() {
-  const media = await getMedia()
+  const [media, stream] = await Promise.all([getMedia(), getStreamSettings()])
 
   const photos = media.filter(m => m.type === 'photo')
   const videos = media.filter(m => m.type === 'video')
@@ -37,6 +50,11 @@ export default async function GalleryPage() {
           </p>
         </div>
       </section>
+
+      {/* ── Live Stream (gated) ────────────────────────── */}
+      {stream.url && (
+        <LiveStreamSection streamUrl={stream.url} streamTitle={stream.title} />
+      )}
 
       {media.length === 0 ? (
         /* ── Empty State ──────────────────────────────── */

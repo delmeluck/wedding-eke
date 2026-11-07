@@ -18,15 +18,15 @@ const config: Config = {
           500: '#BDB5D5',   /* Blue-gray lavender                    */
           600: '#9B8DC8',   /* Medium periwinkle                     */
           700: '#7B6DAF',   /* Deeper periwinkle — icon accents      */
-          800: '#5B4E9A',   /* Main CTA — buttons, nav RSVP pill     */
-          900: '#3D3575',   /* Dark sections                         */
-          950: '#252048',   /* Deepest — hero, admin sidebar         */
+          800: '#8F5DAF',   /* Main CTA — buttons, nav RSVP pill     */
+          900: '#432b50',   /* Dark sections                         */
+          950: '#2a1540',   /* Deepest — hero, admin sidebar         */
         },
         lavender: {
           50:  '#F8F5FF',
           100: '#F0EAFF',
           200: '#E6E6FA',   /* Bright mauve-lavender                 */
-          300: '#D8BFD8',   /* Thistle — soft accent text on dark    */
+          300: '#C8A2C8',   /* Lilac — soft accent text on dark      */
           400: '#C3B1E1',   /* Light amethyst                        */
           500: '#BDB5D5',   /* Blue-gray lavender                    */
         },
@@ -42,9 +42,9 @@ const config: Config = {
           800: '#78350f',
           900: '#451a03',
         },
-        cream: '#FEF7ED',
+        cream: '#FFF4E1',
         linen: '#F5F0EB',
-        gold: '#C9A84C',
+        gold: '#C9A227',
       },
       fontFamily: {
         serif:  ['var(--font-playfair)', 'Georgia', 'serif'],
@@ -52,7 +52,7 @@ const config: Config = {
         script: ['var(--font-great-vibes)', 'cursive'],
       },
       backgroundImage: {
-        'hero-gradient':    'linear-gradient(135deg, #252048 0%, #3D3575 30%, #5B4E9A 60%, #4A3D7A 100%)',
+        'hero-gradient':    'linear-gradient(135deg, #1E1340 0%, #261648 35%, #2E1B56 65%, #221444 100%)',
         'soft-gradient':    'linear-gradient(180deg, #F5F3FF 0%, #fef7ed 100%)',
         'gold-shimmer':     'linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.4) 50%, transparent 100%)',
         'card-shine':       'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%)',
@@ -67,6 +67,7 @@ const config: Config = {
         'spin-slow':     'spin 20s linear infinite',
         'pulse-ring':    'pulseRing 2s ease-out infinite',
         'slide-down':    'slideDown 0.3s ease-out both',
+        'slide-up':      'slideUp 0.35s cubic-bezier(0.21,0.47,0.32,0.98) both',
         'tick':          'tick 0.15s ease-out',
         'draw-line':     'drawLine 1.2s ease-out both',
         'scale-in':      'scaleIn 0.5s ease-out both',
@@ -97,6 +98,10 @@ const config: Config = {
         },
         slideDown: {
           '0%':   { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          '0%':   { opacity: '0', transform: 'translateY(100%)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         tick: {

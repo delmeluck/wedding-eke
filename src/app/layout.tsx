@@ -5,7 +5,7 @@ import { ClientLayoutWrapper } from '@/components/ClientLayoutWrapper'
 
 export const metadata: Metadata = {
   title: 'Ekow & Ekua | Wedding Celebration',
-  description: 'Join us to celebrate the wedding of Ekow and Ekua — 19th December 2026, Bethany Methodist Church, Dzorwulu, Accra.',
+  description: 'Join us to celebrate the wedding of Ekow and Ekua — 19th December 2026, Accra, Ghana.',
   openGraph: {
     title: 'Ekow & Ekua Wedding',
     description: 'You are invited!',

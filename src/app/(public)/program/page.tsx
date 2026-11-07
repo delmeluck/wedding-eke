@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
-import { Clock, MapPin, ChevronRight } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import Link from 'next/link'
-import { VenueMapCard } from '@/components/VenueMap'
+import { ProgramVenueSection } from '@/components/ProgramVenueSection'
 
 async function getAgenda() {
   try {
@@ -13,16 +13,8 @@ async function getAgenda() {
   }
 }
 
-async function getVenues() {
-  try {
-    return await prisma.venue.findMany({ orderBy: { eventDate: 'asc' } })
-  } catch {
-    return []
-  }
-}
-
 export default async function ProgramPage() {
-  const [agenda, venues] = await Promise.all([getAgenda(), getVenues()])
+  const agenda = await getAgenda()
 
   const engagementItems = agenda.filter(a => a.eventDate === '17/12/26')
   const weddingItems    = agenda.filter(a => a.eventDate === '19/12/26')
@@ -76,59 +68,15 @@ export default async function ProgramPage() {
         </div>
       </section>
 
-      {/* ── Venues + Maps ──────────────────────────────── */}
+      {/* ── Venue Access — gated ───────────────────────── */}
       <section className="bg-purple-950 py-20 px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-lavender-500/60 text-xs uppercase tracking-[0.4em] font-sans mb-3">Where to go</p>
-            <h2 className="font-serif text-3xl md:text-4xl text-white mb-3">Venues &amp; Directions</h2>
-            <p className="text-lavender-300/60 font-sans text-sm">
-              Tap <strong className="text-gold">Get Directions</strong> for turn-by-turn navigation
-            </p>
+          <div className="text-center mb-10">
+            <p className="text-lavender-500/60 text-xs uppercase tracking-[0.4em] font-sans mb-3">Getting there</p>
+            <h2 className="font-serif text-3xl md:text-4xl text-white mb-3">Venue &amp; Directions</h2>
           </div>
 
-          {venues.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {venues.map(v => (
-                <VenueMapCard
-                  key={v.id}
-                  name={v.name}
-                  address={v.address}
-                  city={v.city ?? undefined}
-                  mapLink={v.mapLink ?? undefined}
-                  coordinates={v.coordinates ?? undefined}
-                  type={v.type}
-                />
-              ))}
-            </div>
-          ) : (
-            /* Fallback static cards when no venues in DB yet */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <VenueMapCard
-                name="Kasoa Engagement Venue"
-                address="Kasoa"
-                city="Central Region"
-                type="engagement"
-              />
-              <VenueMapCard
-                name="Bethany Methodist Church"
-                address="Dzorwulu"
-                city="Accra"
-                type="ceremony"
-                mapLink="https://www.google.com/maps/search/?api=1&query=Bethany+Methodist+Church+Dzorwulu+Accra"
-              />
-            </div>
-          )}
-
-          {/* Quick directions note */}
-          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-5 text-center">
-            <p className="text-lavender-300/70 text-sm font-sans">
-              🚗 Need help getting there? Call our team:
-            </p>
-            <Link href="/contact" className="inline-flex items-center gap-1.5 mt-2 text-gold text-sm font-medium hover:text-yellow-300 transition-colors">
-              Contact the Wedding Team <ChevronRight size={14} />
-            </Link>
-          </div>
+          <ProgramVenueSection />
         </div>
       </section>
 

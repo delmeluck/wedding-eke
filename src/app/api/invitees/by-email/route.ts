@@ -9,6 +9,13 @@ export async function GET(req: NextRequest) {
     where: { email: { equals: email.toLowerCase() } },
     include: { rsvp: true },
   })
-  if (!invitee) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  if (!invitee) {
+    // Check whether open RSVP mode is enabled
+    const modeSetting = await prisma.siteContent.findUnique({ where: { key: 'rsvp_open_mode' } })
+    const openMode = modeSetting?.value !== 'false'
+    return NextResponse.json({ error: 'Not found', openMode }, { status: 404 })
+  }
+
   return NextResponse.json(invitee)
 }

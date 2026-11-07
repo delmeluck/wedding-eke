@@ -1,8 +1,13 @@
 export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
-import { Phone, Mail, MapPin, ExternalLink, MessageCircle } from 'lucide-react'
-import { generateQRCodeDataURL } from '@/lib/qrcode'
+import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react'
+
+const FALLBACK_CONTACT = {
+  name:  'Wedding Coordinator',
+  phone: '0555382942',
+  email: '',
+}
 
 async function getContent() {
   try {
@@ -15,37 +20,15 @@ async function getContent() {
   }
 }
 
-const VENUES = [
-  {
-    label:   'Engagement Ceremony',
-    place:   'Kasoa',
-    desc:    'Kasoa, Central Region, Ghana',
-    date:    '17 December 2026',
-    emoji:   '💍',
-    mapLink: 'https://maps.google.com/?q=Kasoa,+Ghana',
-  },
-  {
-    label:   'Wedding Ceremony',
-    place:   'Bethany Methodist Church',
-    desc:    'Dzorwulu, Accra, Ghana',
-    date:    '19 December 2026',
-    emoji:   '💒',
-    mapLink: 'https://maps.google.com/?q=Bethany+Methodist+Church,+Dzorwulu,+Accra,+Ghana',
-  },
-]
+function toWhatsApp(phone: string) {
+  const digits = phone.replace(/\D/g, '')
+  // Convert 0XXXXXXXXX (Ghana) → 233XXXXXXXXX
+  if (digits.startsWith('0') && digits.length === 10) return `233${digits.slice(1)}`
+  return digits
+}
 
 export default async function ContactPage() {
-  const [content, engQR, weddQR] = await Promise.all([
-    getContent(),
-    generateQRCodeDataURL('https://maps.google.com/?q=Kasoa,+Ghana'),
-    generateQRCodeDataURL('https://maps.google.com/?q=Bethany+Methodist+Church,+Dzorwulu,+Accra,+Ghana'),
-  ])
-
-  const qrMap: Record<string, string> = {
-    'Engagement Ceremony': engQR,
-    'Wedding Ceremony':    weddQR,
-  }
-
+  const content = await getContent()
   const hasContacts = content.contact_person_name || content.contact_person2_name
 
   return (
@@ -76,104 +59,61 @@ export default async function ContactPage() {
             <h2 className="font-serif text-3xl md:text-4xl text-purple-900">Contact Persons</h2>
           </div>
 
-          {!hasContacts ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-lavender-100">
-              <MessageCircle size={36} className="text-lavender-300 mx-auto mb-3" />
-              <p className="font-serif text-xl text-earth-400 italic">Contact details coming soon</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {content.contact_person_name && (
-                <ContactCard
-                  badge="Primary Contact"
-                  name={content.contact_person_name}
-                  phone={content.contact_person_phone}
-                  email={content.contact_person_email}
-                />
-              )}
-              {content.contact_person2_name && (
-                <ContactCard
-                  badge="Secondary Contact"
-                  name={content.contact_person2_name}
-                  phone={content.contact_person2_phone}
-                />
-              )}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {hasContacts ? (
+              <>
+                {content.contact_person_name && (
+                  <ContactCard
+                    badge="Primary Contact"
+                    name={content.contact_person_name}
+                    phone={content.contact_person_phone}
+                    email={content.contact_person_email}
+                  />
+                )}
+                {content.contact_person2_name && (
+                  <ContactCard
+                    badge="Secondary Contact"
+                    name={content.contact_person2_name}
+                    phone={content.contact_person2_phone}
+                  />
+                )}
+              </>
+            ) : (
+              <ContactCard
+                badge="Contact Us"
+                name={FALLBACK_CONTACT.name}
+                phone={FALLBACK_CONTACT.phone}
+                email={FALLBACK_CONTACT.email}
+              />
+            )}
+          </div>
         </div>
       </section>
 
-      {/* ── Directions ─────────────────────────────────── */}
+      {/* ── Directions — gated ─────────────────────────── */}
       <section className="bg-purple-950 py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
             <p className="text-lavender-500/60 text-xs uppercase tracking-[0.4em] font-sans mb-3">
               Getting here
             </p>
-            <h2 className="font-serif text-3xl md:text-4xl text-white">Directions</h2>
-            <p className="text-lavender-300/70 font-sans text-sm mt-3">
-              Scan the QR code or tap the button to open directions in Google Maps
-            </p>
+            <h2 className="font-serif text-3xl md:text-4xl text-white">Venue &amp; Directions</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {VENUES.map(v => (
-              <div key={v.label}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-7
-                           hover:bg-white/8 transition-colors duration-300">
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">
-                    {v.emoji}
-                  </div>
-                  <div>
-                    <p className="text-lavender-400/60 text-[11px] uppercase tracking-widest">{v.date}</p>
-                    <h3 className="font-serif text-lg text-white leading-snug">{v.label}</h3>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-lavender-300/70 text-sm mb-6">
-                  <MapPin size={14} className="text-gold mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-white/90 font-medium">{v.place}</p>
-                    <p className="text-lavender-400/60 text-xs mt-0.5">{v.desc}</p>
-                  </div>
-                </div>
-
-                {/* Embedded map */}
-                <div className="rounded-xl overflow-hidden mb-4 border border-white/10">
-                  <iframe
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(v.desc)}&output=embed&z=14`}
-                    width="100%"
-                    height="200"
-                    style={{ border: 0, filter: 'brightness(0.85) saturate(0.7)' }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={`Map of ${v.label}`}
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <a
-                    href={v.mapLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
-                               bg-gold text-purple-950 text-sm font-semibold
-                               hover:bg-yellow-300 transition-colors duration-300"
-                  >
-                    <ExternalLink size={14} />
-                    Get Directions
-                  </a>
-                  {/* QR for mobile scanning */}
-                  <div className="flex flex-col items-center bg-white rounded-xl p-2 border border-white/20" title="Scan to open in Maps">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={qrMap[v.label]} alt="QR" className="w-10 h-10" />
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center">
+            <div className="text-4xl mb-4">🔐</div>
+            <h3 className="font-serif text-xl text-white mb-3">Confirmed Guests Only</h3>
+            <p className="text-lavender-300/70 font-sans text-sm leading-relaxed mb-6 max-w-md mx-auto">
+              Venue maps and turn-by-turn directions are available exclusively to guests who have confirmed their attendance.
+              Your <strong className="text-white">RSVP confirmation email</strong> contains your personal access code.
+            </p>
+            <a href="/venue"
+              className="inline-flex items-center gap-2 py-3 px-8 rounded-full
+                         bg-gold text-purple-950 text-sm font-semibold
+                         hover:bg-yellow-300 transition-colors">
+              <MapPin size={14} />
+              Unlock Venue Details
+            </a>
           </div>
         </div>
       </section>
@@ -201,18 +141,40 @@ function ContactCard({
       <h3 className="font-serif text-xl text-purple-900 mb-5">{name}</h3>
       <div className="space-y-3">
         {phone && (
-          <a
-            href={`tel:${phone}`}
-            className="flex items-center gap-3 group"
-          >
-            <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center
-                            group-hover:bg-purple-100 transition-colors">
-              <Phone size={15} className="text-purple-600" />
-            </div>
-            <span className="text-earth-700 text-sm group-hover:text-purple-700 transition-colors">
-              {phone}
-            </span>
-          </a>
+          <>
+            {/* Call */}
+            <a
+              href={`tel:${phone}`}
+              className="flex items-center gap-3 group"
+            >
+              <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center
+                              group-hover:bg-purple-100 transition-colors">
+                <Phone size={15} className="text-purple-600" />
+              </div>
+              <span className="text-earth-700 text-sm group-hover:text-purple-700 transition-colors">
+                {phone}
+              </span>
+            </a>
+            {/* WhatsApp */}
+            <a
+              href={`https://wa.me/${toWhatsApp(phone)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 group"
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+                   style={{ background: 'rgba(37,211,102,0.1)' }}>
+                {/* WhatsApp icon */}
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#25D366"/>
+                  <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.37 5.07L2 22l5.09-1.34A9.945 9.945 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.68 0-3.25-.49-4.57-1.34l-.32-.2-3.02.8.81-2.95-.21-.33A7.95 7.95 0 014 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z" fill="#25D366"/>
+                </svg>
+              </div>
+              <span className="text-sm transition-colors" style={{ color: '#128C7E' }}>
+                WhatsApp
+              </span>
+            </a>
+          </>
         )}
         {email && (
           <a
