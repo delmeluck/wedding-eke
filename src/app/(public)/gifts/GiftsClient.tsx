@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Smartphone, ChevronRight } from 'lucide-react'
+import { Smartphone, ChevronRight, Landmark } from 'lucide-react'
 import { MomoDrawer } from '@/components/MomoDrawer'
+import { BankDrawer } from '@/components/BankDrawer'
 
 export interface GiftMomoInfo {
   id:               string
@@ -46,6 +47,42 @@ function networkBadges(nets: ReturnType<typeof buildNetworks>) {
   if (nets.telecel) labels.push('🔴 Telecel')
   if (nets.airtel)  labels.push('🔵 AirtelTigo')
   return labels
+}
+
+/* ── Bank gift CTA ────────────────────────────────────────── */
+export function BankGiftCTA({
+  giftName, bankName, bankAccount, bankBranch, accountName,
+}: {
+  giftName?:    string
+  bankName?:    string
+  bankAccount?: string
+  bankBranch?:  string
+  accountName?: string
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full mt-4 py-3 rounded-2xl border-2 border-green-200 text-green-700
+                   font-sans font-semibold text-sm flex items-center justify-center gap-2
+                   hover:bg-green-50 hover:border-green-300 transition-all duration-200"
+      >
+        <Landmark size={15} />
+        Pay via Bank Transfer
+        <ChevronRight size={14} />
+      </button>
+      <BankDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        giftName={giftName}
+        bankName={bankName}
+        bankAccount={bankAccount}
+        bankBranch={bankBranch}
+        accountName={accountName}
+      />
+    </>
+  )
 }
 
 /* ── Main component ───────────────────────────────────────── */

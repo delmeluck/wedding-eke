@@ -93,13 +93,8 @@ export function MomoDrawer({
   giftId, giftName, suggestedAmount,
   recipientName, availableNetworks,
 }: MomoDrawerProps) {
-  // Which networks the couple has set up — if none, show all three
-  const hasNumbers = availableNetworks && Object.values(availableNetworks).some(Boolean)
-  const enabledNetworks: Network[] = hasNumbers
-    ? (Object.entries(availableNetworks!) as [Network, string | undefined][])
-        .filter(([, num]) => !!num)
-        .map(([net]) => net)
-    : ['mtn', 'telecel', 'airtel']
+  // Always show all three networks side by side
+  const enabledNetworks: Network[] = ['mtn', 'telecel', 'airtel']
 
   const [stage,      setStage]      = useState<Stage>('form')
   const [network,    setNetwork]    = useState<Network>(enabledNetworks[0] ?? 'mtn')
@@ -140,7 +135,11 @@ export function MomoDrawer({
         const res  = await fetch(`/api/gifts/momo/verify?ref=${reference}`)
         const data = await res.json()
         if (data.status === 'success') { setStage('success'); return }
-        if (data.status === 'failed')  { setStage('failed'); setError('Payment was not completed. Please try again.'); return }
+        if (data.status === 'failed')  {
+          // Auto-prompt didn't complete — switch to manual USSD mode
+          setMode('manual')
+          return
+        }
         if (data.displayText) setDisplayTxt(data.displayText)
       } catch { /* ignore */ }
       attempts++
@@ -238,7 +237,7 @@ export function MomoDrawer({
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block font-sans">
                     Your Network
                   </label>
-                  <div className={`grid gap-2 ${enabledNetworks.length === 1 ? 'grid-cols-1' : enabledNetworks.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  <div className="grid grid-cols-3 gap-2">
                     {NETWORKS.filter(n => enabledNetworks.includes(n.id)).map(n => (
                       <button key={n.id} type="button"
                         onClick={() => setNetwork(n.id)}

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { Gift as GiftIcon, Heart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { GiftsClient, GiftMomoInfo } from './GiftsClient'
+import { GiftsClient, GiftMomoInfo, BankGiftCTA } from './GiftsClient'
 
 async function getGifts() {
   try {
@@ -97,20 +97,14 @@ export default async function GiftsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {registryGifts.map(gift => (
                 <div key={gift.id}
-                  className={`group bg-white rounded-2xl border border-lavender-100 overflow-hidden
-                              flex flex-col hover:shadow-xl hover:shadow-purple-100
-                              hover:-translate-y-1 transition-all duration-300
-                              ${gift.claimed ? 'opacity-60' : ''}`}
+                  className="group bg-white rounded-2xl border border-lavender-100 overflow-hidden
+                             flex flex-col hover:shadow-xl hover:shadow-purple-100
+                             hover:-translate-y-1 transition-all duration-300"
                 >
                   {gift.imageUrl ? (
                     <div className="relative h-48 overflow-hidden bg-lavender-50">
                       <Image src={gift.imageUrl} alt={gift.name} fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                      {gift.claimed && (
-                        <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                          <span className="bg-green-500 text-white text-sm font-medium px-4 py-1.5 rounded-full">✓ Claimed</span>
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <div className="h-36 bg-gradient-to-br from-lavender-50 to-purple-50 flex items-center justify-center">
@@ -127,57 +121,34 @@ export default async function GiftsPage() {
                       <p className="text-earth-500 text-sm leading-relaxed mb-3 flex-1">{gift.description}</p>
                     )}
 
-                    {/* Price + action row */}
-                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-lavender-50 gap-2 flex-wrap">
-                      {gift.price && (
+                    {/* Price row */}
+                    {gift.price && (
+                      <div className="flex items-center mt-auto pt-3 border-t border-lavender-50">
                         <span className="text-gold font-serif font-semibold text-lg">
                           GH₵{gift.price.toLocaleString()}
                         </span>
-                      )}
-                      {!gift.claimed && gift.donationLink && (
-                        <a href={gift.donationLink} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-purple-700 text-sm font-medium hover:text-purple-900 transition-colors ml-auto">
-                          Give this gift →
-                        </a>
-                      )}
-                      {gift.claimed && !gift.imageUrl && (
-                        <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium ml-auto">✓ Claimed</span>
-                      )}
-                    </div>
-
-                    {/* Bank transfer details */}
-                    {gift.giftType === 'bank' && gift.bankName && (
-                      <div className="mt-4 bg-green-50 border border-green-100 rounded-xl p-4 space-y-2">
-                        <p className="text-[11px] text-green-700 uppercase tracking-widest font-sans font-semibold mb-3">
-                          Bank Transfer Details
-                        </p>
-                        <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm font-sans">
-                          <span className="text-earth-400">Bank</span>
-                          <span className="text-earth-800 font-medium">{gift.bankName}</span>
-                          {gift.momoName && (
-                            <>
-                              <span className="text-earth-400">Name</span>
-                              <span className="text-earth-800 font-medium">{gift.momoName}</span>
-                            </>
-                          )}
-                          {gift.bankAccount && (
-                            <>
-                              <span className="text-earth-400">Account</span>
-                              <span className="font-mono text-earth-800 text-xs tracking-wider">{gift.bankAccount}</span>
-                            </>
-                          )}
-                          {gift.bankBranch && (
-                            <>
-                              <span className="text-earth-400">Branch</span>
-                              <span className="text-earth-800">{gift.bankBranch}</span>
-                            </>
-                          )}
-                        </div>
+                        {gift.donationLink && (
+                          <a href={gift.donationLink} target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-purple-700 text-sm font-medium hover:text-purple-900 transition-colors ml-auto">
+                            Give this gift →
+                          </a>
+                        )}
                       </div>
                     )}
 
-                    {/* Inline MoMo button for gifts with momoNumbers */}
-                    {!gift.claimed && hasMomoNumbers(gift) && (
+                    {/* Bank transfer CTA */}
+                    {gift.giftType === 'bank' && (
+                      <BankGiftCTA
+                        giftName={gift.name}
+                        bankName={gift.bankName ?? undefined}
+                        bankAccount={gift.bankAccount ?? undefined}
+                        bankBranch={gift.bankBranch ?? undefined}
+                        accountName={gift.momoName ?? undefined}
+                      />
+                    )}
+
+                    {/* Inline MoMo button for non-bank gifts with momoNumbers */}
+                    {gift.giftType !== 'bank' && hasMomoNumbers(gift) && (
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <GiftsClient inlineGift={toMomoInfo(gift)} />
                       </div>
