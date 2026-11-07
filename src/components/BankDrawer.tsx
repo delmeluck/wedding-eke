@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Landmark, Copy, CheckCircle2, ArrowRight } from 'lucide-react'
 
 export interface BankDrawerProps {
@@ -22,8 +22,21 @@ const STEPS = [
 ]
 
 export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, accountName, giftName }: BankDrawerProps) {
-  const [copied, setCopied] = useState<string | null>(null)
+  const [copied,  setCopied]  = useState<string | null>(null)
   const [thanked, setThanked] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true)
+      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+    } else {
+      setVisible(false)
+      const t = setTimeout(() => { setMounted(false); setThanked(false) }, 350)
+      return () => clearTimeout(t)
+    }
+  }, [open])
 
   function copy(text: string, key: string) {
     navigator.clipboard.writeText(text).catch(() => {})
@@ -31,15 +44,22 @@ export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, a
     setTimeout(() => setCopied(null), 2000)
   }
 
-  if (!open) return null
+  if (!mounted) return null
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={onClose} />
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
+        onClick={onClose}
+      />
 
       <div className="fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center z-50">
-        <div className="relative bg-white rounded-t-3xl md:rounded-3xl shadow-2xl w-full md:max-w-md
-                        max-h-[92vh] overflow-y-auto">
+        <div className={`relative bg-white rounded-t-3xl md:rounded-3xl shadow-2xl w-full md:max-w-md
+                        max-h-[92vh] overflow-y-auto
+                        transition-all duration-350 ease-out
+                        ${visible
+                          ? 'translate-y-0 opacity-100 md:scale-100'
+                          : 'translate-y-full opacity-0 md:translate-y-0 md:scale-95'}`}>
 
           {/* Header */}
           <div className="sticky top-0 bg-white/95 backdrop-blur-sm px-6 pt-5 pb-4
