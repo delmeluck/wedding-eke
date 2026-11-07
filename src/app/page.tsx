@@ -784,7 +784,7 @@ export default function HomePage() {
             className="font-sans mb-7"
             style={{ letterSpacing: '6px', fontSize: '11px', color: '#432b50bb' }}
           >
-            {venueWedding.toUpperCase()}
+            ACCRA, GHANA
           </motion.p>
 
           {/* CTAs */}
