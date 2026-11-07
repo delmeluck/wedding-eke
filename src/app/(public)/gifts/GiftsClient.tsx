@@ -130,40 +130,42 @@ export function GiftsClient({
     <>
       {/* ── MoMo card ───────────────────────────────── */}
       <div className="relative bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-4">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-gold/5 blur-3xl rounded-full pointer-events-none" />
-        <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-          {/* Network icons */}
-          <div className="flex gap-2 flex-shrink-0">
+        <div className="absolute top-0 right-0 w-56 h-56 bg-gold/5 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/5 blur-3xl rounded-full pointer-events-none" />
+        <div className="relative z-10 p-7 md:p-9 flex flex-col items-center text-center gap-5">
+          {/* Network icons row — centered */}
+          <div className="flex gap-3 justify-center">
             {[
-              { show: !hasAnyNumber || !!mergedNets.mtn,    icon: '🔶', label: 'MTN'       },
-              { show: !hasAnyNumber || !!mergedNets.telecel, icon: '🔴', label: 'Telecel'   },
-              { show: !hasAnyNumber || !!mergedNets.airtel,  icon: '🔵', label: 'AirtelTigo'},
+              { show: !hasAnyNumber || !!mergedNets.mtn,    icon: '🔶', label: 'MTN'        },
+              { show: !hasAnyNumber || !!mergedNets.telecel, icon: '🔴', label: 'Telecel'    },
+              { show: !hasAnyNumber || !!mergedNets.airtel,  icon: '🔵', label: 'AirtelTigo' },
             ].filter(n => n.show).map(n => (
               <div key={n.label}
-                className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15
-                           flex flex-col items-center justify-center gap-0.5">
+                className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15
+                           flex flex-col items-center justify-center gap-1">
                 <span className="text-2xl">{n.icon}</span>
                 <span className="text-white/50 text-[9px] font-sans font-semibold tracking-wide">{n.label}</span>
               </div>
             ))}
           </div>
-          {/* Copy + CTA */}
-          <div className="flex-1 text-center md:text-left">
-            <h3 className="font-serif text-xl text-white mb-1">Mobile Money Gift</h3>
-            <p className="text-lavender-300/70 text-sm font-sans mb-4 leading-relaxed">
+          {/* Text + CTA — centered */}
+          <div>
+            <h3 className="font-serif text-2xl text-white mb-2">Mobile Money Gift</h3>
+            <p className="text-lavender-300/70 text-sm font-sans mb-1 leading-relaxed max-w-sm mx-auto">
               {hasAnyNumber
                 ? `Send directly to ${sharedName ?? 'Ekow & Ekua'} via ${badges.join(', ')}.`
                 : 'Send instantly via MTN MoMo, Telecel Cash, or AirtelTigo Money.'}
               {' '}A prompt goes to your phone — just enter your PIN.
             </p>
             {sharedPrice && (
-              <p className="text-gold text-sm font-serif mb-3">
+              <p className="text-gold text-sm font-serif mb-4">
                 Suggested: GH₵{sharedPrice.toLocaleString()}
               </p>
             )}
+            {!sharedPrice && <div className="mb-4" />}
             <button onClick={() => openMomo(mergedGift)}
               className="inline-flex items-center gap-2 bg-gold text-purple-950 font-sans font-semibold
-                         px-6 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200
+                         px-7 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200
                          hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/30">
               <Smartphone size={16} />
               Send a Gift
@@ -176,33 +178,33 @@ export function GiftsClient({
       {/* ── Bank Transfer card(s) ────────────────────── */}
       {bankGifts && bankGifts.map(bank => (
         <div key={bank.id} className="relative bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-4">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-green-400/5 blur-3xl rounded-full pointer-events-none" />
-          <div className="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
-            {/* Bank icon */}
-            <div className="flex gap-2 flex-shrink-0">
-              <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15
-                             flex flex-col items-center justify-center gap-0.5">
-                <Landmark size={22} className="text-green-300" />
-                <span className="text-white/50 text-[9px] font-sans font-semibold tracking-wide">Bank</span>
-              </div>
+          <div className="absolute top-0 right-0 w-56 h-56 bg-green-400/5 blur-3xl rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-green-800/5 blur-3xl rounded-full pointer-events-none" />
+          <div className="relative z-10 p-7 md:p-9 flex flex-col items-center text-center gap-5">
+            {/* Bank icon — centered */}
+            <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15
+                           flex flex-col items-center justify-center gap-1">
+              <Landmark size={24} className="text-green-300" />
+              <span className="text-white/50 text-[9px] font-sans font-semibold tracking-wide">Bank</span>
             </div>
-            {/* Copy + CTA */}
-            <div className="flex-1 text-center md:text-left">
-              <h3 className="font-serif text-xl text-white mb-1">Bank Transfer</h3>
-              <p className="text-lavender-300/70 text-sm font-sans mb-4 leading-relaxed">
+            {/* Text + CTA — centered */}
+            <div>
+              <h3 className="font-serif text-2xl text-white mb-2">Bank Transfer</h3>
+              <p className="text-lavender-300/70 text-sm font-sans mb-1 leading-relaxed max-w-sm mx-auto">
                 {bank.bankName
                   ? `Transfer directly to ${bank.accountName ?? 'Ekow & Ekua'} via ${bank.bankName}.`
                   : `Transfer directly to ${bank.accountName ?? 'Ekow & Ekua'} via bank transfer.`}
                 {' '}Use your mobile banking app or visit any branch.
               </p>
               {bank.price && (
-                <p className="text-gold text-sm font-serif mb-3">
+                <p className="text-gold text-sm font-serif mb-4">
                   Suggested: GH₵{bank.price.toLocaleString()}
                 </p>
               )}
+              {!bank.price && <div className="mb-4" />}
               <button onClick={() => openBank(bank)}
                 className="inline-flex items-center gap-2 bg-gold text-purple-950 font-sans font-semibold
-                           px-6 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200
+                           px-7 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200
                            hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/30">
                 <Landmark size={16} />
                 Transfer via Bank
