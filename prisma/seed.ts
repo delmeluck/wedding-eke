@@ -27,7 +27,7 @@ async function main() {
   const contentDefaults = [
     { key: 'contact_person_name',   value: 'Contact Person' },
     { key: 'contact_person_phone',  value: '+233 24 000 0000' },
-    { key: 'rsvp_deadline',         value: '1 November 2026' },
+    { key: 'rsvp_deadline',         value: '20 November 2026' },
     { key: 'dress_code_note',       value: 'Smart Formal / African Formal — Please embrace our wedding colour palette of purple, lavender, earth tones and gold.' },
     { key: 'hero_tagline',          value: 'Two hearts, one journey' },
   ]

@@ -13,8 +13,17 @@ async function getAgenda() {
   }
 }
 
+async function getRsvpDeadline() {
+  try {
+    const row = await prisma.siteContent.findUnique({ where: { key: 'rsvp_deadline' } })
+    return row?.value ?? '20 November 2026'
+  } catch {
+    return '20 November 2026'
+  }
+}
+
 export default async function ProgramPage() {
-  const agenda = await getAgenda()
+  const [agenda, rsvpDeadline] = await Promise.all([getAgenda(), getRsvpDeadline()])
 
   const engagementItems = agenda.filter(a => a.eventDate === '17/12/26')
   const weddingItems    = agenda.filter(a => a.eventDate === '19/12/26')
@@ -84,7 +93,7 @@ export default async function ProgramPage() {
       <section className="bg-cream py-16 px-4 text-center">
         <p className="font-script text-4xl text-purple-700 mb-3">Join Us</p>
         <p className="text-earth-600 font-sans text-sm mb-6 max-w-sm mx-auto">
-          We can&apos;t wait to celebrate with you. Kindly respond before 1 November 2026.
+          We can&apos;t wait to celebrate with you. Kindly respond before {rsvpDeadline}.
         </p>
         <Link href="/rsvp" className="btn-primary">
           RSVP Now

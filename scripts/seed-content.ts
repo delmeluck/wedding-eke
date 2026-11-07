@@ -19,7 +19,7 @@ const DEFAULTS: Record<string, string> = {
   // Dates
   wedding_date:      'Friday, 19 December 2026',
   engagement_date:   'Wednesday, 17 December 2026',
-  rsvp_deadline:     '1 November 2026',
+  rsvp_deadline:     '20 November 2026',
 
   // Venues
   venue_wedding:     'Bethany Methodist Church, Dzorwulu, Accra',

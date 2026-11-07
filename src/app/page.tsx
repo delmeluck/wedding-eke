@@ -186,7 +186,7 @@ export default function HomePage() {
   const engagementDate = siteContent['engagement_date'] || 'Wednesday, 17 December 2026'
   const venueWedding   = siteContent['venue_wedding']   || 'Accra, Ghana'
   const venueEngagement = siteContent['venue_engagement'] || 'Ghana'
-  const rsvpDeadline   = siteContent['rsvp_deadline']   || '1 November 2026'
+  const rsvpDeadline   = siteContent['rsvp_deadline']   || '20 November 2026'
   const storyText      = siteContent['story_text']      || null
   const heroTagline    = siteContent['hero_tagline']    || null
   const heroSubtitle   = siteContent['hero_subtitle']   || null

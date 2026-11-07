@@ -79,7 +79,7 @@ function inviteWithRSVPEmail({
     <table width="100%" cellpadding="0" cellspacing="0"
       style="background:linear-gradient(135deg,#F5F3FF,#E6E6FA);border:2px solid #E6E6FA;border-radius:14px;margin:0 0 32px;">
       <tr><td style="padding:28px 24px;text-align:center;">
-        <p style="font-family:sans-serif;font-size:11px;color:#8F5DAF;letter-spacing:.3em;text-transform:uppercase;margin:0 0 6px;">Please respond by 1 November 2026</p>
+        <p style="font-family:sans-serif;font-size:11px;color:#8F5DAF;letter-spacing:.3em;text-transform:uppercase;margin:0 0 6px;">Please respond by 20 November 2026</p>
         <p style="font-family:sans-serif;font-size:13px;color:#8F5DAF;margin:0 0 20px;">Will you be joining us?</p>
         <table align="center" cellpadding="0" cellspacing="0"><tr>
           <td style="padding:0 8px;">

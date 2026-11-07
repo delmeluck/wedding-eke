@@ -343,7 +343,7 @@ export function inviteeEmailTemplate({
                   Confirm Attendance →
                 </a>
                 <p style="font-family:sans-serif;font-size:12px;color:#aaa;margin:10px 0 0;">
-                  Please RSVP by 1 November 2026
+                  Please RSVP by 20 November 2026
                 </p>
               </div>` : ''}
             </td>

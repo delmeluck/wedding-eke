@@ -36,7 +36,7 @@ We can't wait to celebrate with you!`,
     subject: 'Friendly RSVP Reminder — Ekow & Ekua',
     message: `We hope this message finds you well!
 
-We are excited to celebrate with you and just wanted to send a gentle reminder to RSVP before 1 November 2026.
+We are excited to celebrate with you and just wanted to send a gentle reminder to RSVP before 20 November 2026.
 
 Your QR code is attached — scan it to confirm your attendance or visit our website.
 

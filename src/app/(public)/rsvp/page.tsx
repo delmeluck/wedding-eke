@@ -396,6 +396,15 @@ function RSVPForm() {
 
 /* ── Page wrapper with Suspense ─────────────────────── */
 export default function RSVPPage() {
+  const [deadline, setDeadline] = useState('20 November 2026')
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(r => r.json())
+      .then(d => { if (d.rsvp_deadline) setDeadline(d.rsvp_deadline) })
+      .catch(() => {})
+  }, [])
+
   return (
     <>
       {/* ── Page Hero ──────────────────────────────── */}
@@ -413,7 +422,7 @@ export default function RSVPPage() {
           <h1 className="font-script text-6xl md:text-7xl text-gold mb-3 drop-shadow-lg">RSVP</h1>
           <div className="ornament-line max-w-40 mx-auto text-gold/40 text-xs mb-5">✦</div>
           <p className="text-lavender-200/70 font-sans text-sm">
-            Please respond by <span className="text-gold font-medium">1 November 2026</span>
+            Please respond by <span className="text-gold font-medium">{deadline}</span>
           </p>
 
           {/* Date reminder pills */}

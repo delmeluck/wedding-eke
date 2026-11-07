@@ -44,7 +44,7 @@ function reminderEmail({
     </p>
     <p style="color:#451a03;line-height:1.85;text-align:center;font-size:15px;margin:0 0 28px;">
       We hope you're well! We wanted to send a gentle reminder that our RSVP deadline is
-      <strong>1 November 2026</strong>. We would love to know if you'll be joining us for
+      <strong>20 November 2026</strong>. We would love to know if you'll be joining us for
       our special celebration.
     </p>
 
