@@ -128,22 +128,6 @@ export default async function DressCodePage() {
         </div>
       </section>
 
-      {/* ── African Wear Spotlight ──────────────────────── */}
-      <section className="bg-soft-gradient py-16 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-3xl border border-lavender-100 shadow-lg p-8 text-center">
-            <div className="text-4xl mb-4">🌍</div>
-            <h3 className="font-serif text-2xl text-purple-900 mb-3">African Formal Wear Welcome</h3>
-            <p className="text-earth-600 font-sans text-sm leading-relaxed mb-6 max-w-md mx-auto">
-              We celebrate our heritage! Kente cloth, Ankara prints, Kaba &amp; Slit,
-              and all forms of African formal attire in our wedding palette are warmly
-              embraced and encouraged.
-            </p>
-            <div className="ornament-line max-w-32 mx-auto text-lavender-300 text-xs">✦</div>
-          </div>
-        </div>
-      </section>
-
       {/* ── Kind Note ──────────────────────────────────── */}
       <section className="bg-purple-950 py-14 px-4 text-center">
         <div className="max-w-xl mx-auto">
