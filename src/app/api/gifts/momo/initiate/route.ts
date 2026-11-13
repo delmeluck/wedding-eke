@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         reference: payment.reference,
         status:    'send_otp',
-        displayText: psData.data?.display_text ?? 'Enter the code sent to your phone.',
+        displayText: displayText || 'Enter the code sent to your phone.',
         mode: 'paystack',
       })
     }
