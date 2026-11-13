@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      paystackStatus = psData.data?.status  ?? 'pending'
+      paystackStatus = psData.data?.status      ?? 'pending'
       displayText    = psData.data?.display_text ?? displayText
       paystackRef    = psData.data?.reference    ?? reference
 
@@ -99,6 +99,16 @@ export async function POST(req: NextRequest) {
         confirmedAt: paystackStatus === 'success' ? new Date() : undefined,
       },
     })
+
+    // send_otp → Paystack needs the user to enter an SMS code before polling
+    if (paystackStatus === 'send_otp') {
+      return NextResponse.json({
+        reference: payment.reference,
+        status:    'send_otp',
+        displayText: psData.data?.display_text ?? 'Enter the code sent to your phone.',
+        mode: 'paystack',
+      })
+    }
 
     return NextResponse.json({
       reference: payment.reference,

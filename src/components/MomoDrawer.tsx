@@ -5,7 +5,7 @@ import { X, Smartphone, Loader2, CheckCircle2, AlertCircle, Copy, ChevronRight, 
 
 /* ── Types ────────────────────────────────────────────────── */
 type Network = 'mtn' | 'telecel' | 'airtel'
-type Stage   = 'form' | 'submitting' | 'pending' | 'success' | 'failed'
+type Stage   = 'form' | 'submitting' | 'otp' | 'pending' | 'success' | 'failed'
 
 interface NetworkConfig {
   id:       Network
@@ -106,6 +106,9 @@ export function MomoDrawer({
   const [reference,  setReference]  = useState('')
   const [displayTxt, setDisplayTxt] = useState('')
   const [mode,       setMode]       = useState<'paystack' | 'manual'>('paystack')
+  const [otp,        setOtp]        = useState('')
+  const [otpPrompt,  setOtpPrompt]  = useState('')
+  const [otpError,   setOtpError]   = useState('')
   const [copied,     setCopied]     = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -118,7 +121,7 @@ export function MomoDrawer({
       setNetwork(enabledNetworks[0] ?? 'mtn')
       setAmount(suggestedAmount ? String(suggestedAmount) : '')
       setPhone(''); setName(''); setNote(''); setError('')
-      setReference(''); setDisplayTxt('')
+      setReference(''); setDisplayTxt(''); setOtp(''); setOtpPrompt(''); setOtpError('')
     }
     return () => { if (pollRef.current) clearTimeout(pollRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,10 +172,33 @@ export function MomoDrawer({
       setReference(data.reference)
       setDisplayTxt(data.displayText ?? '')
       setMode(data.mode ?? 'paystack')
-      setStage(data.status === 'success' ? 'success' : 'pending')
+      if (data.status === 'send_otp') {
+        setOtpPrompt(data.displayText ?? 'Enter the code sent to your phone.')
+        setStage('otp')
+      } else {
+        setStage(data.status === 'success' ? 'success' : 'pending')
+      }
     } catch {
       setStage('failed')
       setError('Network error. Please check your connection and try again.')
+    }
+  }
+
+  async function submitOtp() {
+    if (!otp.trim()) { setOtpError('Please enter the code from your SMS'); return }
+    setOtpError(''); setStage('submitting')
+    try {
+      const res  = await fetch('/api/gifts/momo/submit-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp: otp.trim(), reference }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setStage('otp'); setOtpError(data.error ?? 'Invalid code, please try again'); return }
+      if (data.status === 'success') { setStage('success') }
+      else { setStage('pending') }
+    } catch {
+      setStage('otp'); setOtpError('Network error. Please try again.')
     }
   }
 
@@ -381,6 +407,54 @@ export function MomoDrawer({
                 <p className="text-center text-[11px] text-gray-400 font-sans">
                   Your payment is processed securely. We never store your PIN.
                 </p>
+              </div>
+            )}
+
+            {/* ── OTP ──────────────────────────────────── */}
+            {stage === 'otp' && (
+              <div className="text-center py-6">
+                <div className={`w-20 h-20 rounded-full ${netCfg.bg} border-2 ${netCfg.border} flex items-center justify-center mx-auto mb-5`}>
+                  <span className="text-3xl">💬</span>
+                </div>
+                <h3 className="font-serif text-xl text-purple-900 mb-2">Enter Your Code</h3>
+                <p className="text-gray-500 font-sans text-sm mb-5 max-w-xs mx-auto leading-relaxed">
+                  {otpPrompt || 'A code has been sent to your phone. Enter it below to confirm your payment.'}
+                </p>
+
+                <div className="max-w-xs mx-auto mb-4">
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={8}
+                    value={otp}
+                    onChange={e => { setOtp(e.target.value.replace(/\D/g, '')); setOtpError('') }}
+                    placeholder="Enter code"
+                    className="w-full px-4 py-4 rounded-2xl border-2 border-purple-200
+                               text-center text-2xl font-mono font-bold text-purple-900
+                               tracking-[0.4em] focus:outline-none focus:border-purple-500
+                               transition-colors"
+                    autoFocus
+                  />
+                  {otpError && (
+                    <p className="text-red-500 text-sm font-sans mt-2">{otpError}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                  <button onClick={submitOtp}
+                    disabled={!otp}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-700 to-purple-900
+                               text-white font-sans font-semibold text-base
+                               hover:from-purple-800 hover:to-purple-950 transition-all
+                               disabled:opacity-40 disabled:cursor-not-allowed
+                               flex items-center justify-center gap-2.5">
+                    <CheckCircle2 size={18} /> Confirm Payment
+                  </button>
+                  <button onClick={() => { setStage('form'); setOtp(''); setOtpError('') }}
+                    className="text-sm text-gray-400 hover:text-gray-600 font-sans transition-colors py-1">
+                    ← Go back
+                  </button>
+                </div>
               </div>
             )}
 
