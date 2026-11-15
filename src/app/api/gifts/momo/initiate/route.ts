@@ -16,7 +16,7 @@ function makeRef(): string {
 
 // POST /api/gifts/momo/initiate
 export async function POST(req: NextRequest) {
-  const { giftId, donorName, donorPhone, network, amount, note, forceManual } = await req.json()
+  const { giftId, donorName, donorEmail, donorPhone, network, amount, note, forceManual } = await req.json()
 
   if (!donorPhone || !network || !amount) {
     return NextResponse.json({ error: 'donorPhone, network, and amount are required' }, { status: 400 })
@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
       data: {
         giftId:     giftId ?? undefined,
         donorName:  donorName ?? undefined,
+        donorEmail: donorEmail ?? undefined,
         donorPhone,
         network,
         amount:     amountNum,
@@ -122,15 +123,16 @@ export async function POST(req: NextRequest) {
   // Just log the intent; guest confirms via USSD on their own phone
   const payment = await prisma.momoPayment.create({
     data: {
-      giftId:    giftId ?? undefined,
-      donorName: donorName ?? undefined,
+      giftId:     giftId ?? undefined,
+      donorName:  donorName ?? undefined,
+      donorEmail: donorEmail ?? undefined,
       donorPhone,
       network,
-      amount:    amountNum,
+      amount:     amountNum,
       reference,
-      status:    'pending',
+      status:     'pending',
       displayText: "Please complete the transfer on your phone, then tap \"I've sent the gift\" below.",
-      note:      note ?? undefined,
+      note:       note ?? undefined,
     },
   })
 

@@ -11,6 +11,7 @@ export interface BankDrawerProps {
   bankBranch?:  string
   accountName?: string
   giftName?:    string
+  price?:       number
 }
 
 const STEPS = [
@@ -21,9 +22,12 @@ const STEPS = [
   { n: '5', title: 'Confirm the transfer',        desc: 'Review and approve the transaction in your app.' },
 ]
 
-export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, accountName, giftName }: BankDrawerProps) {
+export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, accountName, giftName, price }: BankDrawerProps) {
   const [copied,  setCopied]  = useState<string | null>(null)
   const [thanked, setThanked] = useState(false)
+  const [name,    setName]    = useState('')
+  const [email,   setEmail]   = useState('')
+  const [amount,  setAmount]  = useState(price ? String(price) : '')
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
 
@@ -33,7 +37,7 @@ export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, a
       requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
     } else {
       setVisible(false)
-      const t = setTimeout(() => { setMounted(false); setThanked(false) }, 350)
+      const t = setTimeout(() => { setMounted(false); setThanked(false); setName(''); setEmail(''); setAmount(price ? String(price) : '') }, 350)
       return () => clearTimeout(t)
     }
   }, [open])
@@ -42,6 +46,23 @@ export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, a
     navigator.clipboard.writeText(text).catch(() => {})
     setCopied(key)
     setTimeout(() => setCopied(null), 2000)
+  }
+
+  async function confirm() {
+    setThanked(true)
+    try {
+      await fetch('/api/gifts/bank/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          donorName:   name  || undefined,
+          donorEmail:  email || undefined,
+          amount:      amount ? Number(amount) : undefined,
+          bankName,
+          accountName,
+        }),
+      })
+    } catch { /* best-effort */ }
   }
 
   if (!mounted) return null
@@ -151,6 +172,27 @@ export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, a
                   </div>
                 </div>
 
+                {/* Optional sender details */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input type="text" value={name} onChange={e => setName(e.target.value)}
+                      placeholder="Your name (optional)"
+                      className="col-span-2 px-4 py-3 rounded-2xl border border-gray-200 text-sm font-sans
+                                 text-gray-700 focus:outline-none focus:border-green-400 transition-colors" />
+                    <input type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="Email for confirmation (optional)"
+                      className="col-span-2 px-4 py-3 rounded-2xl border border-gray-200 text-sm font-sans
+                                 text-gray-700 focus:outline-none focus:border-green-400 transition-colors" />
+                    <div className="col-span-2 relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-serif text-lg">₵</span>
+                      <input type="number" inputMode="decimal" min={1} value={amount} onChange={e => setAmount(e.target.value)}
+                        placeholder="Amount you are sending"
+                        className="w-full pl-9 pr-4 py-3 rounded-2xl border border-gray-200 text-sm font-sans
+                                   text-gray-700 focus:outline-none focus:border-green-400 transition-colors" />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Steps */}
                 <div>
                   <p className="text-[11px] text-gray-400 uppercase tracking-widest font-sans font-semibold mb-4">
@@ -173,7 +215,7 @@ export function BankDrawer({ open, onClose, bankName, bankAccount, bankBranch, a
                 </div>
 
                 {/* Confirm */}
-                <button onClick={() => setThanked(true)}
+                <button onClick={confirm}
                   className="w-full py-4 rounded-2xl bg-gradient-to-r from-green-600 to-green-700
                              text-white font-sans font-semibold text-base
                              hover:from-green-700 hover:to-green-800 transition-all

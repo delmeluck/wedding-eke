@@ -101,6 +101,7 @@ export function MomoDrawer({
   const [phone,      setPhone]      = useState('')
   const [amount,     setAmount]     = useState(suggestedAmount ? String(suggestedAmount) : '')
   const [name,       setName]       = useState('')
+  const [email,      setEmail]      = useState('')
   const [note,       setNote]       = useState('')
   const [error,      setError]      = useState('')
   const [reference,  setReference]  = useState('')
@@ -120,7 +121,7 @@ export function MomoDrawer({
       setStage('form')
       setNetwork(enabledNetworks[0] ?? 'mtn')
       setAmount(suggestedAmount ? String(suggestedAmount) : '')
-      setPhone(''); setName(''); setNote(''); setError('')
+      setPhone(''); setName(''); setEmail(''); setNote(''); setError('')
       setReference(''); setDisplayTxt(''); setOtp(''); setOtpPrompt(''); setOtpError('')
     }
     return () => { if (pollRef.current) clearTimeout(pollRef.current) }
@@ -168,8 +169,8 @@ export function MomoDrawer({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          giftId, donorName: name || undefined, donorPhone: ph,
-          network, amount: am, note: note || undefined, forceManual: true,
+          giftId, donorName: name || undefined, donorEmail: email || undefined,
+          donorPhone: ph, network, amount: am, note: note || undefined, forceManual: true,
         }),
       })
       const data = await res.json()
@@ -356,10 +357,14 @@ export function MomoDrawer({
                   </p>
                 </div>
 
-                {/* Optional name + note */}
+                {/* Optional name, email + note */}
                 <div className="space-y-3">
                   <input type="text" value={name} onChange={e => setName(e.target.value)}
                     placeholder="Your name (optional)"
+                    className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm font-sans
+                               text-gray-700 focus:outline-none focus:border-purple-400 transition-colors" />
+                  <input type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="Your email for confirmation (optional)"
                     className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm font-sans
                                text-gray-700 focus:outline-none focus:border-purple-400 transition-colors" />
                   <input type="text" value={note} onChange={e => setNote(e.target.value)}
@@ -485,7 +490,10 @@ export function MomoDrawer({
                             </span>
                             <span>
                               {isFirst
-                                ? <><strong className={netCfg.textBold}>{netCfg.ussd}</strong>{' '}{step.split(netCfg.ussd)[1]}</>
+                                ? <><a href={`tel:${netCfg.ussd.replace('#', '%23')}`}
+                                        className={`underline underline-offset-2 ${netCfg.textBold}`}>
+                                    {netCfg.ussd}
+                                  </a>{' '}{step.split(netCfg.ussd)[1]}</>
                                 : hasRecipient
                                   ? <>{step.split(recipientNumber!)[0]}<strong className={netCfg.textBold}>{recipientNumber}</strong>
                                       <button onClick={() => handleCopy(recipientNumber!, 'num2')}

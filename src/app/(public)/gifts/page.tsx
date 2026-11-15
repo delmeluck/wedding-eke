@@ -48,13 +48,37 @@ function toBankInfo(g: Awaited<ReturnType<typeof getGifts>>[0]): BankGiftInfo {
   }
 }
 
+async function getBankFallback(): Promise<BankGiftInfo | null> {
+  try {
+    const rows = await prisma.siteContent.findMany({
+      where: { key: { in: ['bank_name', 'bank_account', 'bank_branch', 'bank_account_name'] } },
+    })
+    const m = Object.fromEntries(rows.map(r => [r.key, r.value]))
+    if (!m.bank_account && !m.bank_name) return null
+    return {
+      id:          'site-bank',
+      name:        'Bank Transfer',
+      bankName:    m.bank_name    ?? undefined,
+      bankAccount: m.bank_account ?? undefined,
+      bankBranch:  m.bank_branch  ?? undefined,
+      accountName: m.bank_account_name ?? undefined,
+    }
+  } catch { return null }
+}
+
 export default async function GiftsPage() {
   const gifts = await getGifts()
 
   const momoGifts    = gifts.filter(g => isMomo(g.giftType) || hasMomoNumbers(g))
-  const bankGifts    = gifts.filter(g => g.giftType === 'bank')
+  let   bankGifts    = gifts.filter(g => g.giftType === 'bank').map(toBankInfo)
   // Registry: physical gifts only — no momo, no bank, no token
   const registryGifts = gifts.filter(g => !isMomo(g.giftType) && g.giftType !== 'token' && g.giftType !== 'bank')
+
+  // If no bank gift entries in DB, fall back to site content keys
+  if (bankGifts.length === 0) {
+    const fallback = await getBankFallback()
+    if (fallback) bankGifts = [fallback]
+  }
 
   const hasMomo = momoGifts.length > 0
 
@@ -94,7 +118,7 @@ export default async function GiftsPage() {
 
           <GiftsClient
             momoGifts={momoGifts.map(toMomoInfo)}
-            bankGifts={bankGifts.map(toBankInfo)}
+            bankGifts={bankGifts}
           />
         </div>
       </section>
