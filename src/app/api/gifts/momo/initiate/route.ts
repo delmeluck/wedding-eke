@@ -16,7 +16,7 @@ function makeRef(): string {
 
 // POST /api/gifts/momo/initiate
 export async function POST(req: NextRequest) {
-  const { giftId, donorName, donorPhone, network, amount, note } = await req.json()
+  const { giftId, donorName, donorPhone, network, amount, note, forceManual } = await req.json()
 
   if (!donorPhone || !network || !amount) {
     return NextResponse.json({ error: 'donorPhone, network, and amount are required' }, { status: 400 })
@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
 
   const paystackKey = process.env.PAYSTACK_SECRET_KEY
 
-  // --- Paystack charge flow ---
-  if (paystackKey) {
+  // --- Paystack charge flow (skipped when forceManual is true) ---
+  if (paystackKey && !forceManual) {
     const provider = NETWORK_MAP[network]
     if (!provider) return NextResponse.json({ error: 'Unknown network' }, { status: 400 })
 

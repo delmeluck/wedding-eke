@@ -162,22 +162,21 @@ export function MomoDrawer({
     setError(''); setStage('submitting')
 
     try {
+      // Log the intent in the DB then go straight to the manual USSD flow.
+      // Money goes directly peer-to-peer to the recipient's MoMo number.
       const res  = await fetch('/api/gifts/momo/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ giftId, donorName: name || undefined, donorPhone: ph, network, amount: am, note: note || undefined }),
+        body: JSON.stringify({
+          giftId, donorName: name || undefined, donorPhone: ph,
+          network, amount: am, note: note || undefined, forceManual: true,
+        }),
       })
       const data = await res.json()
       if (!res.ok) { setStage('failed'); setError(data.error ?? 'Something went wrong'); return }
       setReference(data.reference)
-      setDisplayTxt(data.displayText ?? '')
-      setMode(data.mode ?? 'paystack')
-      if (data.status === 'send_otp') {
-        setOtpPrompt(data.displayText ?? 'Enter the code sent to your phone.')
-        setStage('otp')
-      } else {
-        setStage(data.status === 'success' ? 'success' : 'pending')
-      }
+      setMode('manual')
+      setStage('pending')
     } catch {
       setStage('failed')
       setError('Network error. Please check your connection and try again.')
@@ -334,17 +333,6 @@ export function MomoDrawer({
                                  text-xl font-serif text-purple-900 text-right
                                  focus:outline-none focus:border-purple-400 transition-colors"
                     />
-                  </div>
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {[50, 100, 200, 500].map(v => (
-                      <button key={v} type="button" onClick={() => setAmount(String(v))}
-                        className={`text-xs px-3 py-1.5 rounded-full border font-sans transition-colors
-                                    ${Number(amount) === v
-                                      ? 'bg-gold border-gold text-purple-900 font-semibold'
-                                      : 'border-gray-200 text-gray-500 hover:border-purple-300 hover:text-purple-700'}`}>
-                        ₵{v}
-                      </button>
-                    ))}
                   </div>
                 </div>
 
