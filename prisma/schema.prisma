@@ -163,7 +163,7 @@ model MomoPayment {
   gift        Gift?     @relation(fields: [giftId], references: [id], onDelete: SetNull)
   donorName   String?
   donorEmail  String?
-  donorPhone  String
+  donorPhone  String?
   network     String    // mtn | telecel | airtel
   amount      Float     // GHS
   reference   String    @unique

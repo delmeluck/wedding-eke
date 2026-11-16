@@ -18,8 +18,8 @@ function makeRef(): string {
 export async function POST(req: NextRequest) {
   const { giftId, donorName, donorEmail, donorPhone, network, amount, note, forceManual } = await req.json()
 
-  if (!donorPhone || !network || !amount) {
-    return NextResponse.json({ error: 'donorPhone, network, and amount are required' }, { status: 400 })
+  if (!network || !amount) {
+    return NextResponse.json({ error: 'network and amount are required' }, { status: 400 })
   }
 
   const amountNum = Number(amount)
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       giftId:     giftId ?? undefined,
       donorName:  donorName ?? undefined,
       donorEmail: donorEmail ?? undefined,
-      donorPhone,
+      donorPhone: donorPhone ?? undefined,
       network,
       amount:     amountNum,
       reference,
