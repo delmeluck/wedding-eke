@@ -20,7 +20,7 @@ const GUIDES = [
     tag: 'She',
     items: [
       { icon: '✦', text: 'Elegant Outfits in palette colors are celebrated (white wedding)' },
-      { icon: '✦', text: 'Kente, African print is celebrated' },
+      { icon: '✦', text: 'African, Smart or Casual (Engagement)' },
       { icon: '✦', text: 'Heels or flats' },
     ],
   },
