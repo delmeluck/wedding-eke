@@ -64,12 +64,8 @@ export default async function GalleryPage() {
                             justify-center mx-auto mb-7">
               <Camera size={48} className="text-lavender-300" />
             </div>
-            <h2 className="font-serif text-2xl text-purple-900 mb-3">Photos Coming Soon</h2>
-            <p className="text-earth-400 font-sans text-sm leading-relaxed max-w-xs mx-auto">
-              Our gallery is being lovingly prepared. Check back after the engagement celebration
-              on 17 December 2026.
-            </p>
-            <div className="ornament-line max-w-32 mx-auto text-lavender-300 text-xs mt-8">✦</div>
+            <h2 className="font-serif text-2xl text-purple-900 mb-3">Coming Soon</h2>
+            <div className="ornament-line max-w-32 mx-auto text-lavender-300 text-xs mt-4">✦</div>
           </div>
         </section>
       ) : (
