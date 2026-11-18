@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Landmark, Copy, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Landmark, Copy, CheckCircle2, ChevronRight, Smartphone } from 'lucide-react'
 import { BankDrawer } from '@/components/BankDrawer'
 
 export interface GiftMomoInfo {
@@ -41,15 +41,49 @@ function buildNetworks(gift: GiftMomoInfo) {
 }
 
 const NET_META = {
-  mtn:     { icon: '🔶', label: 'MTN MoMo',       ussd: '*170#', textColor: 'text-yellow-300', borderColor: 'border-yellow-500/30', bg: 'bg-yellow-500/10' },
-  telecel: { icon: '🔴', label: 'Telecel Cash',    ussd: '*110#', textColor: 'text-red-300',    borderColor: 'border-red-500/30',    bg: 'bg-red-500/10'    },
-  airtel:  { icon: '🔵', label: 'AirtelTigo Money',ussd: '*500#', textColor: 'text-blue-300',   borderColor: 'border-blue-500/30',   bg: 'bg-blue-500/10'   },
+  mtn: {
+    icon: '🔶', label: 'MTN MoMo', ussd: '*170#',
+    gradient: 'from-amber-400/20 to-yellow-600/10',
+    border: 'border-amber-400/30',
+    iconRing: 'bg-amber-400/15 ring-amber-400/30',
+    labelColor: 'text-amber-300',
+    numberColor: 'text-amber-100',
+    glow: 'hover:shadow-amber-500/20',
+    copyActive: 'bg-amber-400/20 text-amber-200',
+  },
+  telecel: {
+    icon: '🔴', label: 'Telecel Cash', ussd: '*110#',
+    gradient: 'from-red-500/20 to-rose-600/10',
+    border: 'border-red-400/30',
+    iconRing: 'bg-red-400/15 ring-red-400/30',
+    labelColor: 'text-red-300',
+    numberColor: 'text-red-100',
+    glow: 'hover:shadow-red-500/20',
+    copyActive: 'bg-red-400/20 text-red-200',
+  },
+  airtel: {
+    icon: '🔵', label: 'AirtelTigo', ussd: '*500#',
+    gradient: 'from-blue-500/20 to-indigo-600/10',
+    border: 'border-blue-400/30',
+    iconRing: 'bg-blue-400/15 ring-blue-400/30',
+    labelColor: 'text-blue-300',
+    numberColor: 'text-blue-100',
+    glow: 'hover:shadow-blue-500/20',
+    copyActive: 'bg-blue-400/20 text-blue-200',
+  },
 } as const
 
-/* ── Inline network row ──────────────────────────────────── */
-function NetworkRow({ netKey, number }: { netKey: keyof typeof NET_META; number: string }) {
+/* ── Animated contact card ───────────────────────────────── */
+function NetworkCard({
+  netKey, number, accountName, delay = 0,
+}: {
+  netKey:      keyof typeof NET_META
+  number:      string
+  accountName?: string
+  delay?:      number
+}) {
   const [copied, setCopied] = useState(false)
-  const meta = NET_META[netKey]
+  const m = NET_META[netKey]
 
   function copy() {
     navigator.clipboard.writeText(number).catch(() => {})
@@ -58,19 +92,49 @@ function NetworkRow({ netKey, number }: { netKey: keyof typeof NET_META; number:
   }
 
   return (
-    <div className={`flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border ${meta.bg} ${meta.borderColor}`}>
-      <div className="flex items-center gap-2.5">
-        <span className="text-xl">{meta.icon}</span>
-        <div>
-          <p className={`text-xs font-semibold font-sans ${meta.textColor}`}>{meta.label}</p>
-          <p className="text-white font-mono text-sm tracking-wider">{number}</p>
-        </div>
+    <div
+      className={`relative flex flex-col items-center text-center p-5 rounded-3xl
+                  bg-gradient-to-b ${m.gradient} border ${m.border}
+                  hover:scale-[1.04] hover:shadow-xl ${m.glow}
+                  transition-all duration-300 cursor-default
+                  animate-fade-in-up`}
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
+    >
+      {/* Subtle shimmer line at top */}
+      <div className="absolute top-0 inset-x-6 h-px bg-white/10 rounded-full" />
+
+      {/* Network icon */}
+      <div className={`w-14 h-14 rounded-2xl ring-1 ${m.iconRing} flex items-center justify-center mb-3 text-3xl`}>
+        {m.icon}
       </div>
-      <button onClick={copy}
-        className="flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors shrink-0">
+
+      {/* Network name */}
+      <p className={`text-xs font-semibold uppercase tracking-widest font-sans mb-1 ${m.labelColor}`}>
+        {m.label}
+      </p>
+
+      {/* Account holder name */}
+      {accountName && (
+        <p className="text-white/80 text-sm font-serif mb-2 leading-tight">{accountName}</p>
+      )}
+
+      {/* Phone number */}
+      <p className={`font-mono text-base tracking-widest font-bold mb-4 ${m.numberColor}`}>
+        {number}
+      </p>
+
+      {/* Copy button */}
+      <button
+        onClick={copy}
+        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold font-sans
+                    transition-all duration-200 ring-1
+                    ${copied
+                      ? `${m.copyActive} ring-current`
+                      : 'bg-white/10 text-white/60 ring-white/20 hover:bg-white/20 hover:text-white'}`}
+      >
         {copied
-          ? <><CheckCircle2 size={13} className="text-green-400" /> <span className="text-green-400">Copied</span></>
-          : <><Copy size={13} /> Copy</>}
+          ? <><CheckCircle2 size={12} /> Copied!</>
+          : <><Copy size={12} /> Copy number</>}
       </button>
     </div>
   )
@@ -93,15 +157,14 @@ export function GiftsClient({
 
   /* ── Inline registry card numbers ──────────── */
   if (inlineGift) {
-    const nets = buildNetworks(inlineGift)
+    const nets    = buildNetworks(inlineGift)
     const entries = (Object.entries(nets) as [keyof typeof NET_META, string][]).filter(([, v]) => v)
     if (!entries.length) return null
     return (
-      <div className="mt-2 w-full space-y-2">
-        {inlineGift.momoName && (
-          <p className="text-xs text-gray-500 font-sans">{inlineGift.momoName}</p>
-        )}
-        {entries.map(([k, v]) => <NetworkRow key={k} netKey={k} number={v} />)}
+      <div className="mt-3 w-full grid grid-cols-1 gap-2">
+        {entries.map(([k, v], i) => (
+          <NetworkCard key={k} netKey={k} number={v} accountName={inlineGift.momoName} delay={i * 80} />
+        ))}
       </div>
     )
   }
@@ -109,9 +172,8 @@ export function GiftsClient({
   /* ── Full section cards (MoMo + Bank) ──────────── */
   if (!momoGifts) return null
 
-  // Merge all momo gifts into one unified network map
   const mergedNets: { mtn?: string; telecel?: string; airtel?: string } = {}
-  let sharedName:  string | undefined
+  let sharedName: string | undefined
 
   momoGifts.forEach(g => {
     Object.assign(mergedNets, buildNetworks(g))
@@ -123,32 +185,35 @@ export function GiftsClient({
 
   return (
     <>
-      {/* ── MoMo card ───────────────────────────────── */}
-      <div className="relative bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-4">
-        <div className="absolute top-0 right-0 w-56 h-56 bg-gold/5 blur-3xl rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/5 blur-3xl rounded-full pointer-events-none" />
-        <div className="relative z-10 p-7 md:p-9">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex gap-1.5">
-              {['🔶', '🔴', '🔵'].map(icon => (
-                <span key={icon} className="text-xl">{icon}</span>
-              ))}
+      {/* ── MoMo section ────────────────────────────── */}
+      <div className="relative bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-4 p-7 md:p-9">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-400/5 blur-3xl rounded-full pointer-events-none" />
+
+        <div className="relative z-10">
+          {/* Section header */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+              <Smartphone size={16} className="text-white/70" />
             </div>
-            <h3 className="font-serif text-xl text-white">Mobile Money</h3>
+            <h3 className="font-serif text-2xl text-white">Mobile Money</h3>
           </div>
 
           {sharedName && (
-            <p className="text-lavender-300/70 text-sm font-sans mb-4">
-              Send directly to <span className="text-white font-semibold">{sharedName}</span>
+            <p className="text-lavender-300/60 text-sm font-sans mb-6">
+              Dial or copy the number for your network below
             </p>
           )}
+          {!sharedName && <div className="mb-6" />}
 
           {hasNumbers ? (
-            <div className="space-y-2.5">
-              {netEntries.map(([k, v]) => <NetworkRow key={k} netKey={k} number={v} />)}
+            <div className={`grid gap-3 ${netEntries.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' : netEntries.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
+              {netEntries.map(([k, v], i) => (
+                <NetworkCard key={k} netKey={k} number={v} accountName={sharedName} delay={i * 100} />
+              ))}
             </div>
           ) : (
-            <p className="text-lavender-300/50 text-sm font-sans">
+            <p className="text-lavender-300/40 text-sm font-sans text-center py-4">
               MoMo details coming soon — check back shortly.
             </p>
           )}
@@ -174,7 +239,7 @@ export function GiftsClient({
                   : `Transfer directly to ${bank.accountName ?? 'Ekow & Ekua'} via bank transfer.`}
                 {' '}Use your mobile banking app or visit any branch.
               </p>
-              {!bank.price && <div className="mb-4" />}
+              <div className="mb-4" />
               <button onClick={() => openBank(bank)}
                 className="inline-flex items-center gap-2 bg-gold text-purple-950 font-sans font-semibold
                            px-7 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200

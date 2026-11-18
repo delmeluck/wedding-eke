@@ -40,6 +40,7 @@ export default function GalleryPage() {
   const [dragIdx,     setDragIdx]    = useState<number | null>(null)
   const [overIdx,     setOverIdx]    = useState<number | null>(null)
 
+  const [isDragOver, setIsDragOver] = useState(false)
   const resizeRef = useRef<HTMLDivElement>(null)
   const isResizing = useRef(false)
   const resizeStartX = useRef(0)
@@ -329,21 +330,37 @@ export default function GalleryPage() {
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
               {/* Drop zone — always visible at top */}
-              <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-2xl py-7 cursor-pointer transition-colors
-                               ${uploading ? 'opacity-50 pointer-events-none' : 'border-lavender-200 hover:bg-lavender-50 hover:border-purple-300'}`}
+              <div
+                onDragOver={e => { e.preventDefault(); if (!uploading) setIsDragOver(true) }}
+                onDragLeave={() => setIsDragOver(false)}
+                onDrop={e => {
+                  e.preventDefault()
+                  setIsDragOver(false)
+                  if (!uploading) addFiles(e.dataTransfer.files)
+                }}
+                className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl py-7 transition-colors
+                           ${uploading
+                             ? 'opacity-50 pointer-events-none border-lavender-200'
+                             : isDragOver
+                               ? 'border-purple-500 bg-purple-50'
+                               : 'border-lavender-200 hover:bg-lavender-50 hover:border-purple-300'}`}
               >
-                <Upload size={28} className="text-purple-400 mb-2" />
-                <span className="text-sm font-medium text-gray-600">Click or drag photos here</span>
-                <span className="text-xs text-gray-400 mt-1">JPG · PNG · WebP · MP4 · Max 50 MB each</span>
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  multiple
-                  className="sr-only"
-                  disabled={uploading}
-                  onChange={e => addFiles(e.target.files)}
-                />
-              </label>
+                <label className="flex flex-col items-center cursor-pointer w-full">
+                  <Upload size={28} className={`mb-2 ${isDragOver ? 'text-purple-600' : 'text-purple-400'}`} />
+                  <span className="text-sm font-medium text-gray-600">
+                    {isDragOver ? 'Drop photos here' : 'Click or drag photos here'}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-1">JPG · PNG · WebP · MP4 · Max 50 MB each</span>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    className="sr-only"
+                    disabled={uploading}
+                    onChange={e => addFiles(e.target.files)}
+                  />
+                </label>
+              </div>
 
               {/* Pending thumbnails */}
               {pending.length > 0 && (
