@@ -4,7 +4,7 @@ import { sendEmail } from '@/lib/email'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'iotchere55@gmail.com'
 
-function giftConfirmHtml(p: { donorName?: string | null; amount: number; network: string; donorPhone: string; reference: string }) {
+function giftConfirmHtml(p: { donorName?: string | null; amount: number; network: string; donorPhone?: string | null; reference: string }) {
   const name = p.donorName ?? 'Your guest'
   return `
 <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px;background:#fff;">
