@@ -18,3 +18,15 @@ export async function POST(req: NextRequest) {
   const item = await prisma.mediaItem.create({ data: body })
   return NextResponse.json(item, { status: 201 })
 }
+
+// Batch reorder: PATCH /api/gallery  body: [{ id, sortOrder }]
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const updates: { id: string; sortOrder: number }[] = await req.json()
+  await Promise.all(
+    updates.map(u => prisma.mediaItem.update({ where: { id: u.id }, data: { sortOrder: u.sortOrder } }))
+  )
+  return NextResponse.json({ ok: true })
+}

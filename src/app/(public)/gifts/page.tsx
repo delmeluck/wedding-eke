@@ -66,13 +66,39 @@ async function getBankFallback(): Promise<BankGiftInfo | null> {
   } catch { return null }
 }
 
+async function getMomoFallback(): Promise<GiftMomoInfo | null> {
+  try {
+    const rows = await prisma.siteContent.findMany({
+      where: { key: { in: ['momo_mtn_number', 'momo_telecel_number', 'momo_airtel_number', 'momo_name'] } },
+    })
+    const m = Object.fromEntries(rows.map(r => [r.key, r.value]))
+    if (!m.momo_mtn_number && !m.momo_telecel_number && !m.momo_airtel_number) return null
+    return {
+      id:                'site-momo',
+      name:              'Mobile Money',
+      momoName:          m.momo_name          ?? undefined,
+      momoMtnNumber:     m.momo_mtn_number     ?? undefined,
+      momoTelecelNumber: m.momo_telecel_number ?? undefined,
+      momoAirtelNumber:  m.momo_airtel_number  ?? undefined,
+    }
+  } catch { return null }
+}
+
 export default async function GiftsPage() {
   const gifts = await getGifts()
 
-  const momoGifts    = gifts.filter(g => isMomo(g.giftType) || hasMomoNumbers(g))
-  let   bankGifts    = gifts.filter(g => g.giftType === 'bank').map(toBankInfo)
+  const momoRaw       = gifts.filter(g => isMomo(g.giftType) || hasMomoNumbers(g))
+  let   momoMapped:   GiftMomoInfo[] = momoRaw.map(toMomoInfo)
+  let   bankGifts     = gifts.filter(g => g.giftType === 'bank').map(toBankInfo)
   // Registry: physical gifts only — no momo, no bank, no token
   const registryGifts = gifts.filter(g => !isMomo(g.giftType) && g.giftType !== 'token' && g.giftType !== 'bank')
+
+  // If no momo gift entries with numbers, fall back to site content keys
+  const hasNumbers = momoMapped.some(g => g.momoMtnNumber || g.momoTelecelNumber || g.momoAirtelNumber || g.momoNumber)
+  if (!hasNumbers) {
+    const fallback = await getMomoFallback()
+    if (fallback) momoMapped = [fallback]
+  }
 
   // If no bank gift entries in DB, fall back to site content keys
   if (bankGifts.length === 0) {
@@ -80,7 +106,7 @@ export default async function GiftsPage() {
     if (fallback) bankGifts = [fallback]
   }
 
-  const hasMomo = momoGifts.length > 0
+  const hasMomo = momoMapped.length > 0
 
   return (
     <>
@@ -117,7 +143,7 @@ export default async function GiftsPage() {
           </div>
 
           <GiftsClient
-            momoGifts={momoGifts.map(toMomoInfo)}
+            momoGifts={momoMapped}
             bankGifts={bankGifts}
           />
         </div>

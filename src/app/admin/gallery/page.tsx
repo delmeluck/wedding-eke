@@ -1,63 +1,149 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Plus, Trash2, Upload, Star, X, Link as LinkIcon } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Plus, Trash2, Upload, Star, X, GripVertical, CheckCircle2, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/app/toaster'
 
 interface MediaItem {
-  id: string
-  type: string
-  url: string
-  caption?: string
+  id:        string
+  type:      string
+  url:       string
+  caption?:  string
   category?: string
-  featured: boolean
+  featured:  boolean
   sortOrder: number
 }
 
+interface PendingFile {
+  file:    File
+  preview: string
+  status:  'queued' | 'uploading' | 'done' | 'error'
+}
+
+const CATEGORIES = ['engagement', 'pre-wedding', 'wedding', 'reception', 'other']
+
 export default function GalleryPage() {
-  const [items, setItems]         = useState<MediaItem[]>([])
-  const [showAdd, setShowAdd]     = useState(false)
-  const [tab, setTab]             = useState<'upload' | 'url'>('upload')
-  const [uploading, setUploading] = useState(false)
-  const [urlInput, setUrlInput]   = useState('')
-  const [caption, setCaption]     = useState('')
-  const [category, setCategory]   = useState('engagement')
-  const [mediaType, setMediaType] = useState<'photo' | 'video'>('photo')
+  const [items,       setItems]       = useState<MediaItem[]>([])
+  const [photos,      setPhotos]      = useState<MediaItem[]>([])
+  const [videos,      setVideos]      = useState<MediaItem[]>([])
+  const [drawerOpen,  setDrawerOpen]  = useState(false)
+  const [drawerWidth, setDrawerWidth] = useState(440)
+
+  // Upload queue
+  const [pending,     setPending]    = useState<PendingFile[]>([])
+  const [caption,     setCaption]    = useState('')
+  const [category,    setCategory]   = useState('engagement')
+  const [uploading,   setUploading]  = useState(false)
+
+  // Drag-to-reorder
+  const [dragIdx,     setDragIdx]    = useState<number | null>(null)
+  const [overIdx,     setOverIdx]    = useState<number | null>(null)
+
+  const resizeRef = useRef<HTMLDivElement>(null)
+  const isResizing = useRef(false)
+  const resizeStartX = useRef(0)
+  const resizeStartW = useRef(0)
   const { toast } = useToast()
 
+  /* ── Load items ─────────────────────────────────── */
   const load = useCallback(async () => {
     const res = await fetch('/api/gallery')
-    if (res.ok) setItems(await res.json())
+    if (!res.ok) return
+    const data: MediaItem[] = await res.json()
+    setItems(data)
+    setPhotos(data.filter(i => i.type === 'photo'))
+    setVideos(data.filter(i => i.type === 'video'))
   }, [])
 
   useEffect(() => { load() }, [load])
 
-  async function uploadFile(file: File) {
-    setUploading(true)
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await fetch('/api/upload', { method: 'POST', body: fd })
-    if (!res.ok) { setUploading(false); toast({ title: 'Upload failed', type: 'error' }); return }
-    const { url } = await res.json()
-    await addItem(url, file.type.startsWith('video') ? 'video' : 'photo')
-    setUploading(false)
-  }
-
-  async function addItem(url: string, type: string) {
-    const res = await fetch('/api/gallery', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, type, caption, category, featured: false, sortOrder: items.length }),
-    })
-    if (res.ok) {
-      toast({ title: 'Added to gallery', type: 'success' })
-      setShowAdd(false)
-      setUrlInput(''); setCaption(''); setCategory('engagement')
-      load()
+  /* ── Drawer resize ──────────────────────────────── */
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!isResizing.current) return
+      const delta = resizeStartX.current - e.clientX
+      setDrawerWidth(Math.min(700, Math.max(320, resizeStartW.current + delta)))
     }
+    function onUp() { isResizing.current = false }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [])
+
+  function startResize(e: React.MouseEvent) {
+    isResizing.current = true
+    resizeStartX.current = e.clientX
+    resizeStartW.current = drawerWidth
+    e.preventDefault()
   }
 
+  /* ── File picker → pending queue ───────────────── */
+  function addFiles(files: FileList | null) {
+    if (!files) return
+    const newEntries: PendingFile[] = Array.from(files).map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      status: 'queued',
+    }))
+    setPending(prev => [...prev, ...newEntries])
+  }
+
+  function removePending(idx: number) {
+    setPending(prev => {
+      URL.revokeObjectURL(prev[idx].preview)
+      return prev.filter((_, i) => i !== idx)
+    })
+  }
+
+  /* ── Upload all queued files ────────────────────── */
+  async function uploadAll() {
+    if (!pending.length || uploading) return
+    setUploading(true)
+
+    for (let i = 0; i < pending.length; i++) {
+      if (pending[i].status === 'done') continue
+      setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'uploading' } : p))
+
+      try {
+        const fd = new FormData()
+        fd.append('file', pending[i].file)
+        const upRes = await fetch('/api/upload', { method: 'POST', body: fd })
+        if (!upRes.ok) throw new Error('upload failed')
+        const { url } = await upRes.json()
+
+        const addRes = await fetch('/api/gallery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            type: pending[i].file.type.startsWith('video') ? 'video' : 'photo',
+            caption:   caption || undefined,
+            category:  category,
+            featured:  false,
+            sortOrder: items.length + i,
+          }),
+        })
+        if (!addRes.ok) throw new Error('save failed')
+
+        setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'done' } : p))
+      } catch {
+        setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'error' } : p))
+        toast({ title: `Failed: ${pending[i].file.name}`, type: 'error' })
+      }
+    }
+
+    setUploading(false)
+    toast({ title: 'Gallery updated', type: 'success' })
+    await load()
+    // Clear done items; keep errored for retry
+    setPending(prev => prev.filter(p => p.status !== 'done'))
+  }
+
+  /* ── Delete / feature ───────────────────────────── */
   async function del(id: string) {
     if (!confirm('Remove from gallery?')) return
     await fetch(`/api/gallery/${id}`, { method: 'DELETE' })
@@ -73,39 +159,102 @@ export default function GalleryPage() {
     load()
   }
 
-  const photos = items.filter(i => i.type === 'photo')
-  const videos = items.filter(i => i.type === 'video')
+  /* ── Drag-to-reorder ────────────────────────────── */
+  function handleDragStart(idx: number) { setDragIdx(idx) }
+  function handleDragOver(e: React.DragEvent, idx: number) {
+    e.preventDefault()
+    setOverIdx(idx)
+  }
+
+  async function handleDrop(dropTarget: number) {
+    if (dragIdx === null || dragIdx === dropTarget) {
+      setDragIdx(null); setOverIdx(null); return
+    }
+    const reordered = [...photos]
+    const [moved] = reordered.splice(dragIdx, 1)
+    reordered.splice(dropTarget, 0, moved)
+
+    const withOrder = reordered.map((p, i) => ({ ...p, sortOrder: i }))
+    setPhotos(withOrder)
+    setDragIdx(null); setOverIdx(null)
+
+    await fetch('/api/gallery', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(withOrder.map(p => ({ id: p.id, sortOrder: p.sortOrder }))),
+    })
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false)
+    pending.forEach(p => URL.revokeObjectURL(p.preview))
+    setPending([])
+    setCaption(''); setCategory('engagement')
+  }
+
+  const doneCount    = pending.filter(p => p.status === 'done').length
+  const queuedCount  = pending.filter(p => p.status === 'queued' || p.status === 'error').length
 
   return (
-    <div>
+    <div className="relative">
+      {/* ── Header ──────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-serif text-3xl text-gray-800">Gallery</h1>
           <p className="text-gray-500 text-sm mt-1">{photos.length} photos · {videos.length} videos</p>
         </div>
-        <button onClick={() => setShowAdd(true)} className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> Add Media
+        <button onClick={() => setDrawerOpen(true)} className="btn-primary flex items-center gap-2">
+          <Plus size={16} /> Add Photos
         </button>
       </div>
 
-      {/* Photos */}
+      {/* ── Photos grid (drag-to-reorder) ───────────── */}
       {photos.length > 0 && (
         <section className="mb-8">
-          <h2 className="font-semibold text-gray-700 mb-3">Photos</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="font-semibold text-gray-700">Photos</h2>
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">drag to reorder</span>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-            {photos.map(item => (
-              <div key={item.id} className="relative group rounded-xl overflow-hidden bg-gray-100 aspect-square">
-                <Image src={item.url} alt={item.caption ?? ''} fill className="object-cover" />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button onClick={() => toggleFeatured(item)} className={`p-2 rounded-full ${item.featured ? 'bg-gold text-purple-950' : 'bg-white/20 text-white'}`}>
+            {photos.map((item, idx) => (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={e => handleDragOver(e, idx)}
+                onDrop={() => handleDrop(idx)}
+                onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                className={`relative group rounded-xl overflow-hidden bg-gray-100 aspect-square cursor-grab active:cursor-grabbing
+                           transition-all duration-150
+                           ${dragIdx === idx ? 'opacity-40 scale-95' : ''}
+                           ${overIdx === idx && dragIdx !== idx ? 'ring-2 ring-purple-500 ring-offset-1 scale-105' : ''}`}
+              >
+                <Image src={item.url} alt={item.caption ?? ''} fill className="object-cover" unoptimized />
+
+                {/* Drag handle hint */}
+                <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-60 transition-opacity">
+                  <GripVertical size={14} className="text-white drop-shadow" />
+                </div>
+
+                {/* Actions overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity
+                               flex items-center justify-center gap-2">
+                  <button onClick={() => toggleFeatured(item)}
+                    className={`p-2 rounded-full ${item.featured ? 'bg-gold text-purple-950' : 'bg-white/20 text-white'}`}>
                     <Star size={14} />
                   </button>
                   <button onClick={() => del(item.id)} className="p-2 rounded-full bg-red-500/80 text-white">
                     <Trash2 size={14} />
                   </button>
                 </div>
+
                 {item.featured && (
-                  <div className="absolute top-1 right-1 bg-gold text-purple-950 text-[10px] px-1.5 py-0.5 rounded-full">★</div>
+                  <div className="absolute top-1 right-1 bg-gold text-purple-950 text-[10px] px-1.5 py-0.5 rounded-full font-bold">★</div>
+                )}
+                {item.sortOrder > 0 && (
+                  <div className="absolute bottom-1 left-1 bg-black/40 text-white text-[9px] px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    #{item.sortOrder + 1}
+                  </div>
                 )}
               </div>
             ))}
@@ -113,7 +262,7 @@ export default function GalleryPage() {
         </section>
       )}
 
-      {/* Videos */}
+      {/* ── Videos ──────────────────────────────────── */}
       {videos.length > 0 && (
         <section className="mb-8">
           <h2 className="font-semibold text-gray-700 mb-3">Videos</h2>
@@ -125,7 +274,9 @@ export default function GalleryPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-gray-600">{item.caption ?? 'No caption'}</p>
-                  <button onClick={() => del(item.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={14} /></button>
+                  <button onClick={() => del(item.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             ))}
@@ -134,81 +285,159 @@ export default function GalleryPage() {
       )}
 
       {items.length === 0 && (
-        <div className="text-center py-16 text-gray-400">No media yet — add photos or videos above</div>
+        <div className="text-center py-16 text-gray-400">No media yet — click &quot;Add Photos&quot; to get started</div>
       )}
 
-      {/* Add modal */}
-      {showAdd && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="font-serif text-xl">Add Media</h2>
-              <button onClick={() => setShowAdd(false)}><X size={20} /></button>
+      {/* ── Upload drawer ────────────────────────────── */}
+      {drawerOpen && (
+        <>
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={closeDrawer} />
+
+          {/* Resizable panel */}
+          <div
+            className="fixed top-0 right-0 h-full bg-white shadow-2xl z-50 flex flex-col"
+            style={{ width: drawerWidth }}
+          >
+            {/* Resize handle */}
+            <div
+              ref={resizeRef}
+              onMouseDown={startResize}
+              className="absolute left-0 top-0 h-full w-3 cursor-col-resize flex items-center justify-center group z-10 hover:bg-purple-50/60 transition-colors"
+              title="Drag to resize"
+            >
+              <div className="w-0.5 h-12 bg-gray-200 group-hover:bg-purple-400 rounded-full transition-colors" />
             </div>
-            <div className="p-6 space-y-4">
-              {/* Tab */}
-              <div className="flex rounded-xl overflow-hidden border border-gray-200">
-                <button onClick={() => setTab('upload')} className={`flex-1 py-2 text-sm font-medium ${tab === 'upload' ? 'bg-purple-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-                  <Upload size={14} className="inline mr-1" /> Upload File
-                </button>
-                <button onClick={() => setTab('url')} className={`flex-1 py-2 text-sm font-medium ${tab === 'url' ? 'bg-purple-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`}>
-                  <LinkIcon size={14} className="inline mr-1" /> Use URL
-                </button>
-              </div>
 
-              {tab === 'upload' ? (
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+              <div>
+                <h2 className="font-serif text-xl text-gray-800">Upload Photos</h2>
+                {pending.length > 0 && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {pending.length} file{pending.length !== 1 ? 's' : ''} queued
+                    {doneCount > 0 && ` · ${doneCount} done`}
+                  </p>
+                )}
+              </div>
+              <button onClick={closeDrawer} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+              {/* Drop zone — always visible at top */}
+              <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-2xl py-7 cursor-pointer transition-colors
+                               ${uploading ? 'opacity-50 pointer-events-none' : 'border-lavender-200 hover:bg-lavender-50 hover:border-purple-300'}`}
+              >
+                <Upload size={28} className="text-purple-400 mb-2" />
+                <span className="text-sm font-medium text-gray-600">Click or drag photos here</span>
+                <span className="text-xs text-gray-400 mt-1">JPG · PNG · WebP · MP4 · Max 50 MB each</span>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="sr-only"
+                  disabled={uploading}
+                  onChange={e => addFiles(e.target.files)}
+                />
+              </label>
+
+              {/* Pending thumbnails */}
+              {pending.length > 0 && (
                 <div>
-                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-lavender-200 rounded-xl py-8 cursor-pointer hover:bg-lavender-50 transition-colors">
-                    <Upload size={24} className="text-lavender-400 mb-2" />
-                    <span className="text-sm text-gray-500">{uploading ? 'Uploading…' : 'Click or drag to upload'}</span>
-                    <span className="text-xs text-gray-400 mt-1">JPG, PNG, WebP, MP4 · Max 50 MB</span>
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      className="sr-only"
-                      disabled={uploading}
-                      onChange={e => e.target.files?.[0] && uploadFile(e.target.files[0])}
-                    />
-                  </label>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="label">URL</label>
-                    <input value={urlInput} onChange={e => setUrlInput(e.target.value)} className="input-field" placeholder="https://… or YouTube embed URL" />
-                  </div>
-                  <div>
-                    <label className="label">Type</label>
-                    <select value={mediaType} onChange={e => setMediaType(e.target.value as 'photo' | 'video')} className="input-field">
-                      <option value="photo">Photo</option>
-                      <option value="video">Video</option>
-                    </select>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Queue</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {pending.map((pf, i) => (
+                      <div key={i} className="relative group rounded-xl overflow-hidden aspect-square bg-gray-100">
+                        <Image
+                          src={pf.preview}
+                          alt={pf.file.name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                        {/* Status overlay */}
+                        {pf.status === 'uploading' && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Loader2 size={20} className="text-white animate-spin" />
+                          </div>
+                        )}
+                        {pf.status === 'done' && (
+                          <div className="absolute inset-0 bg-green-500/40 flex items-center justify-center">
+                            <CheckCircle2 size={20} className="text-white" />
+                          </div>
+                        )}
+                        {pf.status === 'error' && (
+                          <div className="absolute inset-0 bg-red-500/40 flex items-center justify-center">
+                            <X size={20} className="text-white" />
+                          </div>
+                        )}
+                        {/* Remove button */}
+                        {pf.status !== 'uploading' && (
+                          <button
+                            onClick={() => removePending(i)}
+                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full
+                                       flex items-center justify-center opacity-0 group-hover:opacity-100
+                                       transition-opacity hover:bg-red-500"
+                          >
+                            <X size={10} />
+                          </button>
+                        )}
+                        {/* Filename tooltip */}
+                        <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[9px] px-1 py-0.5
+                                       truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                          {pf.file.name}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              <div>
-                <label className="label">Caption</label>
-                <input value={caption} onChange={e => setCaption(e.target.value)} className="input-field" placeholder="Our engagement shoot…" />
+              {/* Caption + category */}
+              <div className="space-y-3">
+                <div>
+                  <label className="label">Caption <span className="text-gray-400 font-normal">(optional, applied to all)</span></label>
+                  <input
+                    value={caption}
+                    onChange={e => setCaption(e.target.value)}
+                    className="input-field"
+                    placeholder="Engagement shoot in Accra…"
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <label className="label">Category</label>
+                  <select value={category} onChange={e => setCategory(e.target.value)} className="input-field" disabled={uploading}>
+                    {CATEGORIES.map(c => (
+                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1).replace('-', ' ')}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="label">Category</label>
-                <select value={category} onChange={e => setCategory(e.target.value)} className="input-field">
-                  <option value="engagement">Engagement</option>
-                  <option value="pre-wedding">Pre-wedding</option>
-                  <option value="wedding">Wedding</option>
-                  <option value="reception">Reception</option>
-                </select>
-              </div>
+            </div>
 
-              {tab === 'url' && (
-                <button onClick={() => urlInput && addItem(urlInput, mediaType)} className="btn-primary w-full">
-                  Add to Gallery
-                </button>
-              )}
+            {/* Footer — upload button always docked at bottom */}
+            <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-white">
+              <button
+                onClick={uploadAll}
+                disabled={queuedCount === 0 || uploading}
+                className="w-full py-3 rounded-2xl bg-purple-800 text-white font-semibold
+                           hover:bg-purple-900 transition-colors disabled:opacity-40
+                           disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {uploading
+                  ? <><Loader2 size={16} className="animate-spin" /> Uploading…</>
+                  : queuedCount > 0
+                    ? <><Upload size={16} /> Upload {queuedCount} photo{queuedCount !== 1 ? 's' : ''}</>
+                    : 'Pick photos above to upload'}
+              </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )
