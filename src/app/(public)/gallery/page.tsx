@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 import { Camera, Video, Star } from 'lucide-react'
 import { LiveStreamSection } from '@/components/LiveStream'
+import type { GalleryLayout } from '@/app/admin/gallery/LayoutPicker'
 
 async function getMedia() {
   try {
@@ -13,20 +14,165 @@ async function getMedia() {
   }
 }
 
-async function getStreamSettings() {
+async function getSettings() {
   try {
     const rows = await prisma.siteContent.findMany({
-      where: { key: { in: ['stream_url', 'stream_title'] } },
+      where: { key: { in: ['stream_url', 'stream_title', 'gallery_layout'] } },
     })
     const map = Object.fromEntries(rows.map(r => [r.key, r.value]))
-    return { url: map.stream_url ?? '', title: map.stream_title ?? '' }
+    return {
+      streamUrl:   map.stream_url    ?? '',
+      streamTitle: map.stream_title  ?? '',
+      layout:      (map.gallery_layout ?? 'masonry') as GalleryLayout,
+    }
   } catch {
-    return { url: '', title: '' }
+    return { streamUrl: '', streamTitle: '', layout: 'masonry' as GalleryLayout }
   }
 }
 
+/* ── Photo item — shared across layouts ──────────────────── */
+function PhotoItem({
+  item, fill = false, className = '',
+}: {
+  item: { id: string; url: string; caption?: string | null; featured: boolean }
+  fill?: boolean
+  className?: string
+}) {
+  return (
+    <div className={`group relative rounded-2xl overflow-hidden bg-lavender-100 shadow-sm ${className}`}>
+      {fill ? (
+        <Image src={item.url} alt={item.caption ?? 'Wedding photo'} fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+      ) : (
+        <Image src={item.url} alt={item.caption ?? 'Wedding photo'} width={600} height={500}
+          className="w-full object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-950/60 via-transparent to-transparent
+                      opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {item.featured && (
+        <div className="absolute top-2.5 right-2.5 bg-gold text-purple-950 text-[10px]
+                        font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+          <Star size={9} fill="currentColor" /> Featured
+        </div>
+      )}
+      {item.caption && (
+        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-2 opacity-0
+                        group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          <p className="text-white text-xs font-sans leading-snug">{item.caption}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── Layout renderers ────────────────────────────────────── */
+type Photo = Awaited<ReturnType<typeof getMedia>>[number]
+
+function MasonryLayout({ photos }: { photos: Photo[] }) {
+  return (
+    <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+      {photos.map(item => (
+        <div key={item.id} className="break-inside-avoid">
+          <PhotoItem item={item} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function GridLayout({ photos }: { photos: Photo[] }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {photos.map(item => (
+        <div key={item.id} className="relative aspect-square">
+          <PhotoItem item={item} fill className="absolute inset-0" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MagazineLayout({ photos }: { photos: Photo[] }) {
+  const [hero, ...rest] = photos
+  return (
+    <div className="space-y-3">
+      {/* First row: 1 hero + 2 stacked */}
+      <div className="grid grid-cols-3 gap-3" style={{ height: '460px' }}>
+        {hero && (
+          <div className="col-span-2 relative">
+            <PhotoItem item={hero} fill className="absolute inset-0 h-full" />
+          </div>
+        )}
+        <div className="flex flex-col gap-3">
+          {rest.slice(0, 2).map(item => (
+            <div key={item.id} className="relative flex-1">
+              <PhotoItem item={item} fill className="absolute inset-0 h-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Remaining in a 4-col grid */}
+      {rest.length > 2 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {rest.slice(2).map(item => (
+            <div key={item.id} className="relative aspect-square">
+              <PhotoItem item={item} fill className="absolute inset-0" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RowsLayout({ photos }: { photos: Photo[] }) {
+  return (
+    <div className="space-y-3">
+      {photos.map(item => (
+        <div key={item.id} className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden">
+          <PhotoItem item={item} fill className="absolute inset-0" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SpotlightLayout({ photos }: { photos: Photo[] }) {
+  const [hero, ...rest] = photos
+  return (
+    <div className="space-y-3">
+      {hero && (
+        <div className="relative w-full aspect-video rounded-3xl overflow-hidden">
+          <PhotoItem item={hero} fill className="absolute inset-0" />
+        </div>
+      )}
+      {rest.length > 0 && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+          {rest.map(item => (
+            <div key={item.id} className="relative aspect-square">
+              <PhotoItem item={item} fill className="absolute inset-0" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PhotosGrid({ photos, layout }: { photos: Photo[]; layout: GalleryLayout }) {
+  switch (layout) {
+    case 'grid':      return <GridLayout     photos={photos} />
+    case 'magazine':  return <MagazineLayout photos={photos} />
+    case 'rows':      return <RowsLayout     photos={photos} />
+    case 'spotlight': return <SpotlightLayout photos={photos} />
+    default:          return <MasonryLayout  photos={photos} />
+  }
+}
+
+/* ── Page ────────────────────────────────────────────────── */
 export default async function GalleryPage() {
-  const [media, stream] = await Promise.all([getMedia(), getStreamSettings()])
+  const [media, settings] = await Promise.all([getMedia(), getSettings()])
 
   const photos = media.filter(m => m.type === 'photo')
   const videos = media.filter(m => m.type === 'video')
@@ -52,16 +198,14 @@ export default async function GalleryPage() {
       </section>
 
       {/* ── Live Stream (gated) ────────────────────────── */}
-      {stream.url && (
-        <LiveStreamSection streamUrl={stream.url} streamTitle={stream.title} />
+      {settings.streamUrl && (
+        <LiveStreamSection streamUrl={settings.streamUrl} streamTitle={settings.streamTitle} />
       )}
 
       {media.length === 0 ? (
-        /* ── Empty State ──────────────────────────────── */
         <section className="bg-soft-gradient py-32 px-4">
           <div className="max-w-md mx-auto text-center">
-            <div className="w-28 h-28 rounded-full bg-lavender-100 flex items-center
-                            justify-center mx-auto mb-7">
+            <div className="w-28 h-28 rounded-full bg-lavender-100 flex items-center justify-center mx-auto mb-7">
               <Camera size={48} className="text-lavender-300" />
             </div>
             <h2 className="font-serif text-2xl text-purple-900 mb-3">Coming Soon</h2>
@@ -84,45 +228,7 @@ export default async function GalleryPage() {
                   </div>
                 </div>
 
-                <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
-                  {photos.map(item => (
-                    <div key={item.id} className="break-inside-avoid group relative cursor-zoom-in">
-                      <div className="relative rounded-2xl overflow-hidden bg-lavender-100 shadow-sm">
-                        <Image
-                          src={item.url}
-                          alt={item.caption ?? 'Wedding photo'}
-                          width={500}
-                          height={400}
-                          className="w-full object-cover transition-transform duration-500
-                                     group-hover:scale-105"
-                        />
-
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-purple-950/70
-                                        via-transparent to-transparent opacity-0
-                                        group-hover:opacity-100 transition-opacity duration-300" />
-
-                        {/* Featured badge */}
-                        {item.featured && (
-                          <div className="absolute top-2.5 right-2.5 bg-gold text-purple-950 text-[10px]
-                                          font-semibold px-2 py-1 rounded-full flex items-center gap-1">
-                            <Star size={9} fill="currentColor" />
-                            Featured
-                          </div>
-                        )}
-
-                        {/* Caption */}
-                        {item.caption && (
-                          <div className="absolute inset-x-0 bottom-0 p-4 translate-y-2
-                                          opacity-0 group-hover:opacity-100 group-hover:translate-y-0
-                                          transition-all duration-300">
-                            <p className="text-white text-xs font-sans leading-snug">{item.caption}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <PhotosGrid photos={photos} layout={settings.layout} />
               </div>
             </section>
           )}
@@ -146,8 +252,7 @@ export default async function GalleryPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {videos.map(item => (
                     <div key={item.id}
-                      className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden
-                                 hover:bg-white/8 transition-colors duration-300">
+                      className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/8 transition-colors duration-300">
                       <div className="aspect-video bg-black/30">
                         {item.url.includes('youtube') || item.url.includes('youtu.be') ? (
                           <iframe
@@ -157,11 +262,7 @@ export default async function GalleryPage() {
                             title={item.caption ?? 'Video'}
                           />
                         ) : (
-                          <video
-                            src={item.url}
-                            controls
-                            className="w-full h-full object-cover"
-                          />
+                          <video src={item.url} controls className="w-full h-full object-cover" />
                         )}
                       </div>
                       {item.caption && (

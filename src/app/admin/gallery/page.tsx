@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, Trash2, Upload, Star, X, GripVertical, CheckCircle2, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/app/toaster'
+import { LayoutPicker, GalleryLayout } from './LayoutPicker'
 
 interface MediaItem {
   id:        string
@@ -27,6 +28,7 @@ export default function GalleryPage() {
   const [items,       setItems]       = useState<MediaItem[]>([])
   const [photos,      setPhotos]      = useState<MediaItem[]>([])
   const [videos,      setVideos]      = useState<MediaItem[]>([])
+  const [layout,      setLayout]      = useState<GalleryLayout>('masonry')
   const [drawerOpen,  setDrawerOpen]  = useState(false)
   const [drawerWidth, setDrawerWidth] = useState(440)
 
@@ -49,12 +51,20 @@ export default function GalleryPage() {
 
   /* ── Load items ─────────────────────────────────── */
   const load = useCallback(async () => {
-    const res = await fetch('/api/gallery')
-    if (!res.ok) return
-    const data: MediaItem[] = await res.json()
-    setItems(data)
-    setPhotos(data.filter(i => i.type === 'photo'))
-    setVideos(data.filter(i => i.type === 'video'))
+    const [galleryRes, contentRes] = await Promise.all([
+      fetch('/api/gallery'),
+      fetch('/api/content'),
+    ])
+    if (galleryRes.ok) {
+      const data: MediaItem[] = await galleryRes.json()
+      setItems(data)
+      setPhotos(data.filter(i => i.type === 'photo'))
+      setVideos(data.filter(i => i.type === 'video'))
+    }
+    if (contentRes.ok) {
+      const content = await contentRes.json()
+      if (content.gallery_layout) setLayout(content.gallery_layout as GalleryLayout)
+    }
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -208,6 +218,9 @@ export default function GalleryPage() {
           <Plus size={16} /> Add Photos
         </button>
       </div>
+
+      {/* ── Layout picker ───────────────────────────── */}
+      <LayoutPicker current={layout} />
 
       {/* ── Photos grid (drag-to-reorder) ───────────── */}
       {photos.length > 0 && (
