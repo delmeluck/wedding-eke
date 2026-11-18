@@ -20,6 +20,7 @@ interface PendingFile {
   file:    File
   preview: string
   status:  'queued' | 'uploading' | 'done' | 'error'
+  errorMsg?: string
 }
 
 const CATEGORIES = ['engagement', 'pre-wedding', 'wedding', 'reception', 'other']
@@ -33,10 +34,12 @@ export default function GalleryPage() {
   const [drawerWidth, setDrawerWidth] = useState(440)
 
   // Upload queue
-  const [pending,     setPending]    = useState<PendingFile[]>([])
-  const [caption,     setCaption]    = useState('')
-  const [category,    setCategory]   = useState('engagement')
-  const [uploading,   setUploading]  = useState(false)
+  const [pending,       setPending]      = useState<PendingFile[]>([])
+  const [caption,       setCaption]      = useState('')
+  const [category,      setCategory]     = useState('engagement')
+  const [uploading,     setUploading]    = useState(false)
+  const [uploadStatus,  setUploadStatus] = useState('')   // current progress label
+  const [uploadError,   setUploadError]  = useState('')   // last fatal error
 
   // Drag-to-reorder
   const [dragIdx,     setDragIdx]    = useState<number | null>(null)
@@ -114,44 +117,66 @@ export default function GalleryPage() {
   async function uploadAll() {
     if (!pending.length || uploading) return
     setUploading(true)
+    setUploadError('')
+
+    const queued = pending.filter(p => p.status !== 'done')
+    let done = 0
 
     for (let i = 0; i < pending.length; i++) {
       if (pending[i].status === 'done') continue
-      setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'uploading' } : p))
+
+      const name = pending[i].file.name
+      setUploadStatus(`Uploading ${done + 1} of ${queued.length} — ${name}`)
+      setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'uploading', errorMsg: undefined } : p))
 
       try {
+        // Step 1: upload file to storage
         const fd = new FormData()
         fd.append('file', pending[i].file)
         const upRes = await fetch('/api/upload', { method: 'POST', body: fd })
-        if (!upRes.ok) throw new Error('upload failed')
-        const { url } = await upRes.json()
+        const upJson = await upRes.json().catch(() => ({}))
+        if (!upRes.ok) {
+          throw new Error(upJson.error ?? `HTTP ${upRes.status} from /api/upload`)
+        }
+        const { url } = upJson
 
+        // Step 2: save gallery record
         const addRes = await fetch('/api/gallery', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             url,
-            type: pending[i].file.type.startsWith('video') ? 'video' : 'photo',
+            type:      pending[i].file.type.startsWith('video') ? 'video' : 'photo',
             caption:   caption || undefined,
-            category:  category,
+            category,
             featured:  false,
             sortOrder: items.length + i,
           }),
         })
-        if (!addRes.ok) throw new Error('save failed')
+        if (!addRes.ok) {
+          const addJson = await addRes.json().catch(() => ({}))
+          throw new Error(addJson.error ?? `HTTP ${addRes.status} saving to gallery`)
+        }
 
         setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'done' } : p))
-      } catch {
-        setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'error' } : p))
-        toast({ title: `Failed: ${pending[i].file.name}`, type: 'error' })
+        done++
+        setUploadStatus(`Done ${done} of ${queued.length}`)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        setPending(prev => prev.map((p, j) => j === i ? { ...p, status: 'error', errorMsg: msg } : p))
+        setUploadError(`"${name}" failed: ${msg}`)
       }
     }
 
     setUploading(false)
-    toast({ title: 'Gallery updated', type: 'success' })
-    await load()
-    // Clear done items; keep errored for retry
-    setPending(prev => prev.filter(p => p.status !== 'done'))
+    if (done > 0) {
+      setUploadStatus(`✓ ${done} photo${done !== 1 ? 's' : ''} uploaded`)
+      toast({ title: `${done} photo${done !== 1 ? 's' : ''} added to gallery`, type: 'success' })
+      await load()
+      setPending(prev => prev.filter(p => p.status !== 'done'))
+    } else {
+      setUploadStatus('')
+    }
   }
 
   /* ── Delete / feature ───────────────────────────── */
@@ -451,7 +476,21 @@ export default function GalleryPage() {
             </div>
 
             {/* Footer — upload button always docked at bottom */}
-            <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-white">
+            <div className="shrink-0 px-6 py-4 border-t border-gray-100 bg-white space-y-3">
+              {/* Status / error banner */}
+              {uploadError && (
+                <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 text-sm text-red-700">
+                  <X size={14} className="shrink-0 mt-0.5" />
+                  <span className="leading-snug">{uploadError}</span>
+                </div>
+              )}
+              {uploadStatus && !uploadError && (
+                <div className="flex items-center gap-2 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2.5 text-sm text-purple-700">
+                  {uploading && <Loader2 size={14} className="animate-spin shrink-0" />}
+                  {!uploading && uploadStatus.startsWith('✓') && <CheckCircle2 size={14} className="text-green-600 shrink-0" />}
+                  <span>{uploadStatus}</span>
+                </div>
+              )}
               <button
                 onClick={uploadAll}
                 disabled={queuedCount === 0 || uploading}
