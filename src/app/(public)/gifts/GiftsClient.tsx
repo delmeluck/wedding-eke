@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Smartphone, ChevronRight, Landmark } from 'lucide-react'
-import { MomoDrawer } from '@/components/MomoDrawer'
+import { Landmark, Copy, CheckCircle2, ChevronRight } from 'lucide-react'
 import { BankDrawer } from '@/components/BankDrawer'
 
 export interface GiftMomoInfo {
@@ -41,12 +40,40 @@ function buildNetworks(gift: GiftMomoInfo) {
   return nets
 }
 
-function networkBadges(nets: ReturnType<typeof buildNetworks>) {
-  const labels: string[] = []
-  if (nets.mtn)     labels.push('🔶 MTN')
-  if (nets.telecel) labels.push('🔴 Telecel')
-  if (nets.airtel)  labels.push('🔵 AirtelTigo')
-  return labels
+const NET_META = {
+  mtn:     { icon: '🔶', label: 'MTN MoMo',       ussd: '*170#', textColor: 'text-yellow-300', borderColor: 'border-yellow-500/30', bg: 'bg-yellow-500/10' },
+  telecel: { icon: '🔴', label: 'Telecel Cash',    ussd: '*110#', textColor: 'text-red-300',    borderColor: 'border-red-500/30',    bg: 'bg-red-500/10'    },
+  airtel:  { icon: '🔵', label: 'AirtelTigo Money',ussd: '*500#', textColor: 'text-blue-300',   borderColor: 'border-blue-500/30',   bg: 'bg-blue-500/10'   },
+} as const
+
+/* ── Inline network row ──────────────────────────────────── */
+function NetworkRow({ netKey, number }: { netKey: keyof typeof NET_META; number: string }) {
+  const [copied, setCopied] = useState(false)
+  const meta = NET_META[netKey]
+
+  function copy() {
+    navigator.clipboard.writeText(number).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className={`flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border ${meta.bg} ${meta.borderColor}`}>
+      <div className="flex items-center gap-2.5">
+        <span className="text-xl">{meta.icon}</span>
+        <div>
+          <p className={`text-xs font-semibold font-sans ${meta.textColor}`}>{meta.label}</p>
+          <p className="text-white font-mono text-sm tracking-wider">{number}</p>
+        </div>
+      </div>
+      <button onClick={copy}
+        className="flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors shrink-0">
+        {copied
+          ? <><CheckCircle2 size={13} className="text-green-400" /> <span className="text-green-400">Copied</span></>
+          : <><Copy size={13} /> Copy</>}
+      </button>
+    </div>
+  )
 }
 
 /* ── Main component ───────────────────────────────────────── */
@@ -59,43 +86,23 @@ export function GiftsClient({
   bankGifts?:  BankGiftInfo[]
   inlineGift?: GiftMomoInfo
 }) {
-  const [momoOpen,      setMomoOpen]      = useState(false)
-  const [activeGift,    setActiveGift]    = useState<GiftMomoInfo | null>(null)
-  const [bankOpen,      setBankOpen]      = useState(false)
+  const [bankOpen,       setBankOpen]       = useState(false)
   const [activeBankGift, setActiveBankGift] = useState<BankGiftInfo | null>(null)
 
-  function openMomo(gift: GiftMomoInfo) { setActiveGift(gift); setMomoOpen(true) }
   function openBank(gift: BankGiftInfo) { setActiveBankGift(gift); setBankOpen(true) }
 
-  const activeNets = activeGift ? buildNetworks(activeGift) : {}
-
-  /* ── Inline registry card button ───────────────── */
+  /* ── Inline registry card numbers ──────────── */
   if (inlineGift) {
-    const nets   = buildNetworks(inlineGift)
-    const badges = networkBadges(nets)
+    const nets = buildNetworks(inlineGift)
+    const entries = (Object.entries(nets) as [keyof typeof NET_META, string][]).filter(([, v]) => v)
+    if (!entries.length) return null
     return (
-      <>
-        <button onClick={() => openMomo(inlineGift)}
-          className="inline-flex items-center gap-1.5 text-purple-700 text-sm font-medium
-                     hover:text-purple-900 transition-colors ml-auto">
-          <Smartphone size={14} />
-          Send via MoMo →
-        </button>
-        {badges.length > 0 && (
-          <p className="text-[10px] text-gray-400 font-sans w-full mt-1">
-            {badges.join(' · ')}
-          </p>
+      <div className="mt-2 w-full space-y-2">
+        {inlineGift.momoName && (
+          <p className="text-xs text-gray-500 font-sans">{inlineGift.momoName}</p>
         )}
-        <MomoDrawer
-          open={momoOpen}
-          onClose={() => setMomoOpen(false)}
-          giftId={activeGift?.id}
-          giftName={activeGift?.name}
-          suggestedAmount={activeGift?.price}
-          recipientName={activeGift?.momoName}
-          availableNetworks={activeNets}
-        />
-      </>
+        {entries.map(([k, v]) => <NetworkRow key={k} netKey={k} number={v} />)}
+      </div>
     )
   }
 
@@ -105,26 +112,14 @@ export function GiftsClient({
   // Merge all momo gifts into one unified network map
   const mergedNets: { mtn?: string; telecel?: string; airtel?: string } = {}
   let sharedName:  string | undefined
-  let sharedPrice: number | undefined
 
   momoGifts.forEach(g => {
     Object.assign(mergedNets, buildNetworks(g))
-    if (g.momoName) sharedName  ??= g.momoName
-    if (g.price)    sharedPrice ??= g.price
+    if (g.momoName) sharedName ??= g.momoName
   })
 
-  const hasAnyNumber = Object.values(mergedNets).some(Boolean)
-  const badges       = networkBadges(mergedNets)
-
-  const mergedGift: GiftMomoInfo = {
-    id:               momoGifts[0]?.id ?? 'general',
-    name:             'Cash Gift',
-    price:            sharedPrice,
-    momoName:         sharedName,
-    momoMtnNumber:    mergedNets.mtn,
-    momoTelecelNumber: mergedNets.telecel,
-    momoAirtelNumber: mergedNets.airtel,
-  }
+  const netEntries = (Object.entries(mergedNets) as [keyof typeof NET_META, string][]).filter(([, v]) => v)
+  const hasNumbers = netEntries.length > 0
 
   return (
     <>
@@ -132,46 +127,31 @@ export function GiftsClient({
       <div className="relative bg-white/5 border border-white/10 rounded-3xl overflow-hidden mb-4">
         <div className="absolute top-0 right-0 w-56 h-56 bg-gold/5 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/5 blur-3xl rounded-full pointer-events-none" />
-        <div className="relative z-10 p-7 md:p-9 flex flex-col items-center text-center gap-5">
-          {/* Network icons row — centered */}
-          <div className="flex gap-3 justify-center">
-            {[
-              { show: !hasAnyNumber || !!mergedNets.mtn,    icon: '🔶', label: 'MTN'        },
-              { show: !hasAnyNumber || !!mergedNets.telecel, icon: '🔴', label: 'Telecel'    },
-              { show: !hasAnyNumber || !!mergedNets.airtel,  icon: '🔵', label: 'AirtelTigo' },
-            ].filter(n => n.show).map(n => (
-              <div key={n.label}
-                className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15
-                           flex flex-col items-center justify-center gap-1">
-                <span className="text-2xl">{n.icon}</span>
-                <span className="text-white/50 text-[9px] font-sans font-semibold tracking-wide">{n.label}</span>
-              </div>
-            ))}
+        <div className="relative z-10 p-7 md:p-9">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex gap-1.5">
+              {['🔶', '🔴', '🔵'].map(icon => (
+                <span key={icon} className="text-xl">{icon}</span>
+              ))}
+            </div>
+            <h3 className="font-serif text-xl text-white">Mobile Money</h3>
           </div>
-          {/* Text + CTA — centered */}
-          <div>
-            <h3 className="font-serif text-2xl text-white mb-2">Mobile Money Gift</h3>
-            <p className="text-lavender-300/70 text-sm font-sans mb-1 leading-relaxed max-w-sm mx-auto">
-              {hasAnyNumber
-                ? `Send directly to ${sharedName ?? 'Ekow & Ekua'} via ${badges.join(', ')}.`
-                : 'Send instantly via MTN MoMo, Telecel Cash, or AirtelTigo Money.'}
-              {' '}A prompt goes to your phone — just enter your PIN.
+
+          {sharedName && (
+            <p className="text-lavender-300/70 text-sm font-sans mb-4">
+              Send directly to <span className="text-white font-semibold">{sharedName}</span>
             </p>
-            {sharedPrice && (
-              <p className="text-gold text-sm font-serif mb-4">
-                Suggested: GH₵{sharedPrice.toLocaleString()}
-              </p>
-            )}
-            {!sharedPrice && <div className="mb-4" />}
-            <button onClick={() => openMomo(mergedGift)}
-              className="inline-flex items-center gap-2 bg-gold text-purple-950 font-sans font-semibold
-                         px-7 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200
-                         hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/30">
-              <Smartphone size={16} />
-              Send a Gift
-              <ChevronRight size={15} />
-            </button>
-          </div>
+          )}
+
+          {hasNumbers ? (
+            <div className="space-y-2.5">
+              {netEntries.map(([k, v]) => <NetworkRow key={k} netKey={k} number={v} />)}
+            </div>
+          ) : (
+            <p className="text-lavender-300/50 text-sm font-sans">
+              MoMo details coming soon — check back shortly.
+            </p>
+          )}
         </div>
       </div>
 
@@ -181,13 +161,11 @@ export function GiftsClient({
           <div className="absolute top-0 right-0 w-56 h-56 bg-green-400/5 blur-3xl rounded-full pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-green-800/5 blur-3xl rounded-full pointer-events-none" />
           <div className="relative z-10 p-7 md:p-9 flex flex-col items-center text-center gap-5">
-            {/* Bank icon — centered */}
             <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15
                            flex flex-col items-center justify-center gap-1">
               <Landmark size={24} className="text-green-300" />
               <span className="text-white/50 text-[9px] font-sans font-semibold tracking-wide">Bank</span>
             </div>
-            {/* Text + CTA — centered */}
             <div>
               <h3 className="font-serif text-2xl text-white mb-2">Bank Transfer</h3>
               <p className="text-lavender-300/70 text-sm font-sans mb-1 leading-relaxed max-w-sm mx-auto">
@@ -196,18 +174,13 @@ export function GiftsClient({
                   : `Transfer directly to ${bank.accountName ?? 'Ekow & Ekua'} via bank transfer.`}
                 {' '}Use your mobile banking app or visit any branch.
               </p>
-              {bank.price && (
-                <p className="text-gold text-sm font-serif mb-4">
-                  Suggested: GH₵{bank.price.toLocaleString()}
-                </p>
-              )}
               {!bank.price && <div className="mb-4" />}
               <button onClick={() => openBank(bank)}
                 className="inline-flex items-center gap-2 bg-gold text-purple-950 font-sans font-semibold
                            px-7 py-3 rounded-full hover:bg-yellow-300 transition-all duration-200
                            hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gold/30">
                 <Landmark size={16} />
-                Transfer via Bank
+                See Bank Details
                 <ChevronRight size={15} />
               </button>
             </div>
@@ -215,36 +188,7 @@ export function GiftsClient({
         </div>
       ))}
 
-      {/* ── How it works ─────────────────────────────── */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-        <p className="text-lavender-300/60 text-xs uppercase tracking-[0.3em] font-sans mb-4">How it works</p>
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { step: '1', title: 'Choose method',    desc: 'Mobile Money or Bank Transfer'    },
-            { step: '2', title: 'Enter your details', desc: 'Number or account to send from' },
-            { step: '3', title: 'Confirm & send',   desc: 'Approve the transaction'           },
-          ].map(s => (
-            <div key={s.step} className="text-center">
-              <div className="w-8 h-8 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center mx-auto mb-2">
-                <span className="text-gold font-serif font-bold text-sm">{s.step}</span>
-              </div>
-              <p className="text-white text-xs font-semibold mb-0.5">{s.title}</p>
-              <p className="text-lavender-300/50 text-[11px] font-sans leading-tight">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Shared drawers ───────────────────────────── */}
-      <MomoDrawer
-        open={momoOpen}
-        onClose={() => setMomoOpen(false)}
-        giftId={activeGift?.id?.startsWith('general') ? undefined : activeGift?.id}
-        giftName={activeGift?.name}
-        suggestedAmount={activeGift?.price}
-        recipientName={activeGift?.momoName}
-        availableNetworks={activeNets}
-      />
+      {/* ── Bank drawer ──────────────────────────────── */}
       <BankDrawer
         open={bankOpen}
         onClose={() => setBankOpen(false)}
