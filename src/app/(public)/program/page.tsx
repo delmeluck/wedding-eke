@@ -13,17 +13,22 @@ async function getAgenda() {
   }
 }
 
-async function getRsvpDeadline() {
+async function getSiteContent() {
   try {
-    const row = await prisma.siteContent.findUnique({ where: { key: 'rsvp_deadline' } })
-    return row?.value ?? '20 November 2026'
+    const rows = await prisma.siteContent.findMany({
+      where: { key: { in: ['rsvp_deadline', 'wedding_date', 'engagement_date'] } },
+    })
+    return Object.fromEntries(rows.map(r => [r.key, r.value]))
   } catch {
-    return '20 November 2026'
+    return {} as Record<string, string>
   }
 }
 
 export default async function ProgramPage() {
-  const [agenda, rsvpDeadline] = await Promise.all([getAgenda(), getRsvpDeadline()])
+  const [agenda, content] = await Promise.all([getAgenda(), getSiteContent()])
+  const rsvpDeadline   = content.rsvp_deadline    ?? '20 November 2026'
+  const weddingDate    = content.wedding_date      ?? 'Saturday, 19 December 2026'
+  const engagementDate = content.engagement_date   ?? 'Thursday, 17 December 2026'
 
   const engagementItems = agenda.filter(a => a.eventDate === '17/12/26')
   const weddingItems    = agenda.filter(a => a.eventDate === '19/12/26')
@@ -55,7 +60,7 @@ export default async function ProgramPage() {
           {/* Engagement */}
           <EventDay
             label="Engagement Celebration"
-            date="Thursday, 17 December 2026"
+            date={engagementDate}
             location="Kasoa, Central Region, Ghana"
             emoji="💍"
             accent="from-purple-900 to-purple-800"
@@ -68,7 +73,7 @@ export default async function ProgramPage() {
           {/* Wedding */}
           <EventDay
             label="Wedding Ceremony"
-            date="Saturday, 19 December 2026"
+            date={weddingDate}
             location="Bethany Methodist Church, Dzorwulu, Accra"
             emoji="💒"
             accent="from-gold to-earth-600"

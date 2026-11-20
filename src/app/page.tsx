@@ -182,8 +182,10 @@ export default function HomePage() {
   /* Content fields with hardcoded fallbacks */
   const groomName      = siteContent['groom_name']      || 'Ekow'
   const brideName      = siteContent['bride_name']      || 'Ekua'
-  const weddingDate    = siteContent['wedding_date']    || 'Saturday, 19 December 2026'
-  const engagementDate = siteContent['engagement_date'] || 'Thursday, 17 December 2026'
+  const weddingDate         = siteContent['wedding_date']           || 'Saturday, 19 December 2026'
+  const engagementDate      = siteContent['engagement_date']        || 'Thursday, 17 December 2026'
+  const weddingTime         = siteContent['wedding_time']           || '1:00 PM'
+  const weddingCeremonyNote = siteContent['wedding_ceremony_note']  || 'Cocktail follows'
   const venueWedding   = siteContent['venue_wedding']   || 'Accra, Ghana'
   const venueEngagement = siteContent['venue_engagement'] || 'Ghana'
   const rsvpDeadline   = siteContent['rsvp_deadline']   || '20 November 2026'
@@ -220,7 +222,7 @@ export default function HomePage() {
 
   return (
     <>
-      <WelcomeModal />
+      <WelcomeModal weddingTime={weddingTime} weddingDate={weddingDate} engagementDate={engagementDate} />
 
       {/* ════════════════════════════════════════════════
           HERO  — cinematic parallax
@@ -1013,7 +1015,7 @@ export default function HomePage() {
                     <div className="w-px h-10 bg-purple-700" />
                     <div>
                       <p className="font-sans text-sm font-semibold text-white">Wedding Ceremony</p>
-                      <p className="text-lavender-400 text-xs mt-0.5">1:00 PM · Cocktail follows</p>
+                      <p className="text-lavender-400 text-xs mt-0.5">{weddingTime} · {weddingCeremonyNote}</p>
                     </div>
                   </div>
                 </div>

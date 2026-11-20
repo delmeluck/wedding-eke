@@ -20,7 +20,7 @@ const PETALS = [
   { left: '80%', dur: '8s',  delay: '5s',    w: 10, h: 14 },
 ]
 
-export function WelcomeModal() {
+export function WelcomeModal({ weddingTime = '1:00 PM', weddingDate = 'Saturday, 19 December 2026', engagementDate = 'Thursday, 17 December 2026' }: { weddingTime?: string; weddingDate?: string; engagementDate?: string }) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -173,8 +173,8 @@ export function WelcomeModal() {
                        style={{ background: 'rgba(183,154,216,0.08)', border: '1px solid rgba(183,154,216,0.15)' }}>
                     <Calendar size={14} style={{ color: '#B79AD8', flexShrink: 0 }} />
                     <div>
-                      <p className="font-sans text-sm font-medium leading-tight" style={{ color: '#432b50' }}>19 December 2026</p>
-                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#432b5077' }}>Wedding Ceremony · 1:00 PM</p>
+                      <p className="font-sans text-sm font-medium leading-tight" style={{ color: '#432b50' }}>{weddingDate}</p>
+                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#432b5077' }}>Wedding Ceremony · {weddingTime}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3"
