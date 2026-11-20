@@ -92,8 +92,8 @@ export default function ContentPage() {
         // Content defaults matching site hardcoded values
         groom_name:        'Ekow',
         bride_name:        'Ekua',
-        wedding_date:      'Friday, 19 December 2026',
-        engagement_date:   'Wednesday, 17 December 2026',
+        wedding_date:      'Saturday, 19 December 2026',
+        engagement_date:   'Thursday, 17 December 2026',
         rsvp_deadline:     '20 November 2026',
         venue_wedding:     'Bethany Methodist Church, Dzorwulu, Accra',
         venue_engagement:  'Ghana',

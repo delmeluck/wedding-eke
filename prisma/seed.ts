@@ -69,7 +69,7 @@ async function main() {
       city:        'Accra',
       description: 'Wedding ceremony venue',
       eventDate:   '19/12/26',
-      eventTime:   '10:00 AM',
+      eventTime:   '1:00 PM',
       mapLink:     'https://maps.google.com/?q=Bethany+Methodist+Church,+Dzorwulu,+Accra,+Ghana',
     },
   })
@@ -78,7 +78,7 @@ async function main() {
   // Agenda
   const agendaItems = [
     { id: 'agenda-1', title: 'Guests Arrive',          time: '9:30 AM',  eventDate: '19/12/26', sortOrder: 1, icon: '🚗' },
-    { id: 'agenda-2', title: 'Wedding Ceremony Begins', time: '10:00 AM', eventDate: '19/12/26', sortOrder: 2, icon: '💒' },
+    { id: 'agenda-2', title: 'Wedding Ceremony Begins', time: '1:00 PM', eventDate: '19/12/26', sortOrder: 2, icon: '💒' },
     { id: 'agenda-3', title: 'Exchange of Vows',        time: '10:30 AM', eventDate: '19/12/26', sortOrder: 3, icon: '💍' },
     { id: 'agenda-4', title: 'Signing of Register',     time: '11:00 AM', eventDate: '19/12/26', sortOrder: 4, icon: '📝' },
     { id: 'agenda-5', title: 'Recessional',             time: '11:30 AM', eventDate: '19/12/26', sortOrder: 5, icon: '🎉' },

@@ -174,7 +174,7 @@ export function WelcomeModal() {
                     <Calendar size={14} style={{ color: '#B79AD8', flexShrink: 0 }} />
                     <div>
                       <p className="font-sans text-sm font-medium leading-tight" style={{ color: '#432b50' }}>19 December 2026</p>
-                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#432b5077' }}>Wedding Ceremony · 10:00 AM</p>
+                      <p className="font-sans text-[11px] mt-0.5" style={{ color: '#432b5077' }}>Wedding Ceremony · 1:00 PM</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-xl px-4 py-3"

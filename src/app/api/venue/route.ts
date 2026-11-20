@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 const VENUES = [
   {
     label:       'Engagement Ceremony',
-    date:        'Wednesday, 17 December 2026',
+    date:        'Thursday, 17 December 2026',
     time:        'TBC',
     place:       'Kasoa',
     address:     'Kasoa, Central Region, Ghana',
@@ -16,7 +16,7 @@ const VENUES = [
   },
   {
     label:       'Wedding Ceremony',
-    date:        'Friday, 19 December 2026',
+    date:        'Saturday, 19 December 2026',
     time:        'TBC',
     place:       'Bethany Methodist Church',
     address:     'Dzorwulu, Accra, Ghana',

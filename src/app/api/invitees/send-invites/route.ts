@@ -67,9 +67,9 @@ function inviteWithRSVPEmail({
       style="background:#fff;border:1px solid #E6E6FA;border-radius:14px;margin:0 0 32px;">
       <tr><td style="padding:24px;text-align:center;">
         <p style="font-family:sans-serif;font-size:10px;color:#8F5DAF;letter-spacing:.3em;text-transform:uppercase;margin:0 0 10px;">Save the Date</p>
-        <p style="font-size:13px;color:#8F5DAF;font-family:sans-serif;margin:0 0 4px;">💍 Engagement — Wednesday, 17 December 2026</p>
+        <p style="font-size:13px;color:#8F5DAF;font-family:sans-serif;margin:0 0 4px;">💍 Engagement — Thursday, 17 December 2026</p>
         <p style="font-size:12px;color:#9B8DC8;font-family:sans-serif;margin:0 0 14px;">Kasoa, Central Region, Ghana</p>
-        <p style="font-size:13px;color:#8F5DAF;font-family:sans-serif;font-weight:600;margin:0 0 4px;">💒 Wedding — Friday, 19 December 2026</p>
+        <p style="font-size:13px;color:#8F5DAF;font-family:sans-serif;font-weight:600;margin:0 0 4px;">💒 Wedding — Saturday, 19 December 2026</p>
         <p style="font-size:12px;color:#8F5DAF;font-family:sans-serif;margin:0 0 14px;">Bethany Methodist Church, Dzorwulu, Accra</p>
         <p style="font-family:sans-serif;font-size:12px;color:#9B8DC8;margin:0;">🎨 Dress Code: Smart Formal / African Formal</p>
       </td></tr>

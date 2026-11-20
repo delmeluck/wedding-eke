@@ -17,8 +17,8 @@ const DEFAULTS: Record<string, string> = {
   bride_name:        'Ekua',
 
   // Dates
-  wedding_date:      'Friday, 19 December 2026',
-  engagement_date:   'Wednesday, 17 December 2026',
+  wedding_date:      'Saturday, 19 December 2026',
+  engagement_date:   'Thursday, 17 December 2026',
   rsvp_deadline:     '20 November 2026',
 
   // Venues

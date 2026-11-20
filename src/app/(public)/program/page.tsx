@@ -55,7 +55,7 @@ export default async function ProgramPage() {
           {/* Engagement */}
           <EventDay
             label="Engagement Celebration"
-            date="Wednesday, 17 December 2026"
+            date="Thursday, 17 December 2026"
             location="Kasoa, Central Region, Ghana"
             emoji="💍"
             accent="from-purple-900 to-purple-800"
@@ -68,7 +68,7 @@ export default async function ProgramPage() {
           {/* Wedding */}
           <EventDay
             label="Wedding Ceremony"
-            date="Friday, 19 December 2026"
+            date="Saturday, 19 December 2026"
             location="Bethany Methodist Church, Dzorwulu, Accra"
             emoji="💒"
             accent="from-gold to-earth-600"
